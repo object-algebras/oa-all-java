@@ -1,5 +1,3 @@
-ReadMe.md
-
 #oa-all-java
 This is a collection of current projects/libraries related to object algebras using Java. To use these libraries, just include corresponding jar(s) inside `lib/` folder.
 
