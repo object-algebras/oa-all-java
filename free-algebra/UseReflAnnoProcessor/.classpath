@@ -7,6 +7,6 @@
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/Users/yanlinwang/Dropbox/PL_group/ReflectiveAlgebra/UseReflAnnoProcessor/lib/ReflProcessor.jar"/>
+	<classpathentry kind="lib" path="/ReflAnnoProcessor/ReflProcessor.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
