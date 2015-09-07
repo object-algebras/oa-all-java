@@ -8,7 +8,7 @@ public interface Tokens {
 	static int num(String src) {
 		return Integer.parseInt(src);
 	}
-	
+
 	@Token("[ ]+") @Skip
 	void ws();
 }
