@@ -19,11 +19,13 @@ public class NormalAlt extends Alt implements Conventions {
 
     private List<String> syms;
     private String cons;
+    private int labelCounter;
 
-    public NormalAlt(String nt, int prec, String cons, List<String> syms) {
+    public NormalAlt(String nt, int prec, String cons, List<String> syms, int labelCounter) {
         super(nt, prec);
         this.cons = cons;
         this.syms = syms;
+        this.labelCounter = labelCounter;
     }
 
     public boolean isInfix() {
@@ -49,8 +51,6 @@ public class NormalAlt extends Alt implements Conventions {
     private boolean isNEWLINE(String s) {
         return s.equals("NEWLINE");
     }
-
-    private int labelCounter = 0;
 
     public String toString() {
         String prod = "";

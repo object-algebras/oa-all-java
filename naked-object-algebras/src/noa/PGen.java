@@ -183,6 +183,7 @@ public class PGen {
 
 	private void addProductions(Rules rules) {
 		Method[] ms = signature.getMethods();
+		int labelCounter=0;
 		for (Method m : ms) {
 			Syntax anno = m.getAnnotation(Syntax.class);
 			if (anno == null) {
@@ -203,7 +204,8 @@ public class PGen {
 			if (precAnno != null) {
 				prec = precAnno.value();
 			}
-			rules.addAlt(new NormalAlt(syms[0], prec, m.getName(), realSyms));
+			rules.addAlt(new NormalAlt(syms[0], prec, m.getName(), realSyms, labelCounter));
+			labelCounter+=realSyms.size();
 		}
 		// String[] syms = {};
 		// List<String> realSysms = Arrays.asList(syms);
