@@ -92,10 +92,13 @@ public class Rules implements Conventions {
 
     // change the grammar name to the name of the class
     public void generate(StringBuilder sb) {
+        generate(sb, false);
+    }
+    public void generate(StringBuilder sb, boolean py) {
         sb.append("grammar " + name + ";\n");
         sb.append("tokens {INDENT, DEDENT}\n");
         addHeader(sb);
-        addLexerMembers(sb);
+        addLexerMembers(sb, py);
         addParserMembers(sb);
 
         for (String nt : rules.keySet()) {
@@ -129,9 +132,11 @@ public class Rules implements Conventions {
         sb.append("}\n\n");
     }
 
-    private void addLexerMembers(StringBuilder sb) {
+    private void addLexerMembers(StringBuilder sb, boolean py) {
         sb.append("@lexer::members{\n");
-        addPythonLexerMembers(sb);
+        if (py) {
+            addPythonLexerMembers(sb);
+        }
         sb.append("}\n\n");
     }
 
