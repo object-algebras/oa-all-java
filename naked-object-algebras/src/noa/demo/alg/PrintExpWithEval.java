@@ -30,6 +30,18 @@ public class PrintExpWithEval implements ExpAlg<Function<IEval, IPrint>, IPrint>
 	}
 
 	@Override
+	public Function<IEval, IPrint> sub(IPrint l, IPrint r) {
+		return (eval) -> {
+			return new IPrint() {
+				@Override
+				public String print() {
+					return "Eval: sub " + eval.eval() + "\n" + l.print() + r.print();
+				}
+			};
+		};
+	}
+
+	@Override
 	public Function<IEval, IPrint> lit(int n) {
 		return (eval) -> {
 			return new IPrint() {
@@ -43,22 +55,6 @@ public class PrintExpWithEval implements ExpAlg<Function<IEval, IPrint>, IPrint>
 
 	@Override
 	public Function<IEval, IPrint> avg(List<IPrint> es) {
-		return (eval) -> {
-			return new IPrint() {
-				@Override
-				public String print() {
-					String s = "Eval: avg " + eval.eval() + "\n";
-					for (IPrint p: es) {
-						s += p.print();
-					}
-					return s;
-				}
-			};
-		};
-	}
-	
-	@Override
-	public Function<IEval, IPrint> avg2(List<IPrint> es) {
 		return (eval) -> {
 			return new IPrint() {
 				@Override

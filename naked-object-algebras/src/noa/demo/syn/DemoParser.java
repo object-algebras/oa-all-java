@@ -1,4 +1,4 @@
-// Generated from src/noa/demo/syn/ by ANTLR 4.2.2
+// Generated from src/noa/demo/syn/ by ANTLR 4.5
 
 package noa.demo.syn;
 import static noa.demo.syn.Tokens.*;
@@ -14,26 +14,60 @@ import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class DemoParser extends Parser {
+	static { RuntimeMetaData.checkVersion("4.5", RuntimeMetaData.VERSION); }
+
 	protected static final DFA[] _decisionToDFA;
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		T__6=1, T__5=2, T__4=3, T__3=4, T__2=5, T__1=6, T__0=7, WS=8, NUM=9;
-	public static final String[] tokenNames = {
-		"<INVALID>", "'avg'", "'avg2'", "'('", "')'", "'*'", "'+'", "','", "WS", 
-		"NUM"
-	};
+		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, WS=7, NUM=8;
 	public static final int
 		RULE_exp = 0, RULE_prog = 1;
 	public static final String[] ruleNames = {
 		"exp", "prog"
 	};
 
-	@Override
-	public String getGrammarFileName() { return "syn"; }
+	private static final String[] _LITERAL_NAMES = {
+		null, "'avg'", "'('", "')'", "'*'", "'-'", "'+'"
+	};
+	private static final String[] _SYMBOLIC_NAMES = {
+		null, null, null, null, null, null, null, "WS", "NUM"
+	};
+	public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
+
+	/**
+	 * @deprecated Use {@link #VOCABULARY} instead.
+	 */
+	@Deprecated
+	public static final String[] tokenNames;
+	static {
+		tokenNames = new String[_SYMBOLIC_NAMES.length];
+		for (int i = 0; i < tokenNames.length; i++) {
+			tokenNames[i] = VOCABULARY.getLiteralName(i);
+			if (tokenNames[i] == null) {
+				tokenNames[i] = VOCABULARY.getSymbolicName(i);
+			}
+
+			if (tokenNames[i] == null) {
+				tokenNames[i] = "<INVALID>";
+			}
+		}
+	}
 
 	@Override
-	public String[] getTokenNames() { return tokenNames; }
+	@Deprecated
+	public String[] getTokenNames() {
+		return tokenNames;
+	}
+
+	@Override
+
+	public Vocabulary getVocabulary() {
+		return VOCABULARY;
+	}
+
+	@Override
+	public String getGrammarFileName() { return "syn"; }
 
 	@Override
 	public String[] getRuleNames() { return ruleNames; }
@@ -66,16 +100,18 @@ public class DemoParser extends Parser {
 	}
 	public static class ExpContext extends ParserRuleContext {
 		public Object _exp;
+		public ExpContext exp_3;
 		public ExpContext exp_0;
-		public Token NUM_0;
+		public Token NUM_1;
 		public ExpContext exp;
-		public List<ExpContext> exp_0tail = new ArrayList<ExpContext>();
-		public List<ExpContext> exp_0_list = new ArrayList<ExpContext>();
+		public List<ExpContext> exp_6 = new ArrayList<ExpContext>();
+		public ExpContext exp_5;
+		public Token op_10;
 		public ExpContext exp_1;
+		public TerminalNode NUM() { return getToken(DemoParser.NUM, 0); }
 		public List<ExpContext> exp() {
 			return getRuleContexts(ExpContext.class);
 		}
-		public TerminalNode NUM() { return getToken(DemoParser.NUM, 0); }
 		public ExpContext exp(int i) {
 			return getRuleContext(ExpContext.class,i);
 		}
@@ -101,107 +137,97 @@ public class DemoParser extends Parser {
 			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(30);
+			setState(17);
 			switch (_input.LA(1)) {
 			case NUM:
 				{
-				setState(5); ((ExpContext)_localctx).NUM_0 = match(NUM);
-				((ExpContext)_localctx)._exp =  builder.lit(num((((ExpContext)_localctx).NUM_0!=null?((ExpContext)_localctx).NUM_0.getText():null)));
+				setState(5);
+				((ExpContext)_localctx).NUM_1 = match(NUM);
+				((ExpContext)_localctx)._exp =  builder.lit(num((((ExpContext)_localctx).NUM_1!=null?((ExpContext)_localctx).NUM_1.getText():null)));
 				}
 				break;
-			case 1:
+			case T__0:
 				{
-				setState(7); match(1);
-				setState(8); match(3);
-				{
-				setState(9); ((ExpContext)_localctx).exp_0 = exp(0);
-				setState(14);
-				_errHandler.sync(this);
-				_la = _input.LA(1);
-				while (_la==7) {
-					{
-					{
-					setState(10); match(7);
-					setState(11); ((ExpContext)_localctx).exp = exp(0);
-					((ExpContext)_localctx).exp_0tail.add(((ExpContext)_localctx).exp);
-					}
-					}
-					setState(16);
-					_errHandler.sync(this);
-					_la = _input.LA(1);
-				}
-				}
-				setState(17); match(4);
-				((ExpContext)_localctx)._exp =  builder.avg(lift("_exp", ((ExpContext)_localctx).exp_0tail, ((ExpContext)_localctx).exp_0._exp));
-				}
-				break;
-			case 2:
-				{
-				setState(20); match(2);
-				setState(21); match(3);
-				setState(23); 
+				setState(7);
+				match(T__0);
+				setState(8);
+				match(T__1);
+				setState(10); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 				do {
 					{
 					{
-					setState(22); ((ExpContext)_localctx).exp = exp(0);
-					((ExpContext)_localctx).exp_0_list.add(((ExpContext)_localctx).exp);
+					setState(9);
+					((ExpContext)_localctx).exp = exp(0);
+					((ExpContext)_localctx).exp_6.add(((ExpContext)_localctx).exp);
 					}
 					}
-					setState(25); 
+					setState(12); 
 					_errHandler.sync(this);
 					_la = _input.LA(1);
-				} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << 1) | (1L << 2) | (1L << NUM))) != 0) );
-				setState(27); match(4);
-				((ExpContext)_localctx)._exp =  builder.avg2(lift("_exp", ((ExpContext)_localctx).exp_0_list));
+				} while ( _la==T__0 || _la==NUM );
+				setState(14);
+				match(T__2);
+				((ExpContext)_localctx)._exp =  builder.avg(lift("_exp", ((ExpContext)_localctx).exp_6));
 				}
 				break;
 			default:
 				throw new NoViableAltException(this);
 			}
 			_ctx.stop = _input.LT(-1);
-			setState(44);
+			setState(31);
 			_errHandler.sync(this);
-			_alt = getInterpreter().adaptivePredict(_input,4,_ctx);
-			while ( _alt!=2 && _alt!=ATN.INVALID_ALT_NUMBER ) {
+			_alt = getInterpreter().adaptivePredict(_input,3,_ctx);
+			while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER ) {
 				if ( _alt==1 ) {
 					if ( _parseListeners!=null ) triggerExitRuleEvent();
 					_prevctx = _localctx;
 					{
-					setState(42);
-					switch ( getInterpreter().adaptivePredict(_input,3,_ctx) ) {
+					setState(29);
+					switch ( getInterpreter().adaptivePredict(_input,2,_ctx) ) {
 					case 1:
 						{
 						_localctx = new ExpContext(_parentctx, _parentState);
-						_localctx.exp_0 = _prevctx;
+						_localctx.exp_3 = _prevctx;
+						_localctx.exp_3 = _prevctx;
 						pushNewRecursionContext(_localctx, _startState, RULE_exp);
-						setState(32);
+						setState(19);
 						if (!(precpred(_ctx, 2))) throw new FailedPredicateException(this, "precpred(_ctx, 2)");
-						setState(33); match(5);
-						setState(34); ((ExpContext)_localctx).exp_1 = exp(3);
-						((ExpContext)_localctx)._exp =  builder.mul((((ExpContext)_localctx).exp_0._exp),(((ExpContext)_localctx).exp_1._exp));
+						setState(20);
+						match(T__3);
+						setState(21);
+						((ExpContext)_localctx).exp_5 = exp(3);
+						((ExpContext)_localctx)._exp =  builder.mul((((ExpContext)_localctx).exp_3._exp),(((ExpContext)_localctx).exp_5._exp));
 						}
 						break;
-
 					case 2:
 						{
 						_localctx = new ExpContext(_parentctx, _parentState);
 						_localctx.exp_0 = _prevctx;
+						_localctx.exp_0 = _prevctx;
 						pushNewRecursionContext(_localctx, _startState, RULE_exp);
-						setState(37);
+						setState(24);
 						if (!(precpred(_ctx, 1))) throw new FailedPredicateException(this, "precpred(_ctx, 1)");
-						setState(38); match(6);
-						setState(39); ((ExpContext)_localctx).exp_1 = exp(2);
-						((ExpContext)_localctx)._exp =  builder.add((((ExpContext)_localctx).exp_0._exp),(((ExpContext)_localctx).exp_1._exp));
+						setState(25);
+						((ExpContext)_localctx).op_10 = _input.LT(1);
+						_la = _input.LA(1);
+						if ( !(_la==T__4 || _la==T__5) ) {
+							((ExpContext)_localctx).op_10 = (Token)_errHandler.recoverInline(this);
+						} else {
+							consume();
+						}
+						setState(26);
+						((ExpContext)_localctx).exp_1 = exp(2);
+						((ExpContext)_localctx)._exp =  (((ExpContext)_localctx).op_10!=null?((ExpContext)_localctx).op_10.getText():null).equals("+") ? builder.add(((ExpContext)_localctx).exp_0._exp, ((ExpContext)_localctx).exp_1._exp) : (((ExpContext)_localctx).op_10!=null?((ExpContext)_localctx).op_10.getText():null).equals("-") ? builder.sub(((ExpContext)_localctx).exp_0._exp, ((ExpContext)_localctx).exp_1._exp) : null;
 						}
 						break;
 					}
 					} 
 				}
-				setState(46);
+				setState(33);
 				_errHandler.sync(this);
-				_alt = getInterpreter().adaptivePredict(_input,4,_ctx);
+				_alt = getInterpreter().adaptivePredict(_input,3,_ctx);
 			}
 			}
 		}
@@ -218,7 +244,7 @@ public class DemoParser extends Parser {
 
 	public static class ProgContext extends ParserRuleContext {
 		public Object _prog;
-		public ExpContext exp_0;
+		public ExpContext exp_1;
 		public ExpContext exp() {
 			return getRuleContext(ExpContext.class,0);
 		}
@@ -234,8 +260,9 @@ public class DemoParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(47); ((ProgContext)_localctx).exp_0 = exp(0);
-			((ProgContext)_localctx)._prog =  builder.start((((ProgContext)_localctx).exp_0._exp));
+			setState(34);
+			((ProgContext)_localctx).exp_1 = exp(0);
+			((ProgContext)_localctx)._prog =  builder.start((((ProgContext)_localctx).exp_1._exp));
 			}
 		}
 		catch (RecognitionException re) {
@@ -251,35 +278,33 @@ public class DemoParser extends Parser {
 
 	public boolean sempred(RuleContext _localctx, int ruleIndex, int predIndex) {
 		switch (ruleIndex) {
-		case 0: return exp_sempred((ExpContext)_localctx, predIndex);
+		case 0:
+			return exp_sempred((ExpContext)_localctx, predIndex);
 		}
 		return true;
 	}
 	private boolean exp_sempred(ExpContext _localctx, int predIndex) {
 		switch (predIndex) {
-		case 0: return precpred(_ctx, 2);
-
-		case 1: return precpred(_ctx, 1);
+		case 0:
+			return precpred(_ctx, 2);
+		case 1:
+			return precpred(_ctx, 1);
 		}
 		return true;
 	}
 
 	public static final String _serializedATN =
-		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\13\65\4\2\t\2\4\3"+
-		"\t\3\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\7\2\17\n\2\f\2\16\2\22\13\2\3\2\3"+
-		"\2\3\2\3\2\3\2\3\2\6\2\32\n\2\r\2\16\2\33\3\2\3\2\3\2\5\2!\n\2\3\2\3\2"+
-		"\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\7\2-\n\2\f\2\16\2\60\13\2\3\3\3\3\3\3"+
-		"\3\3\2\3\2\4\2\4\2\28\2 \3\2\2\2\4\61\3\2\2\2\6\7\b\2\1\2\7\b\7\13\2\2"+
-		"\b!\b\2\1\2\t\n\7\3\2\2\n\13\7\5\2\2\13\20\5\2\2\2\f\r\7\t\2\2\r\17\5"+
-		"\2\2\2\16\f\3\2\2\2\17\22\3\2\2\2\20\16\3\2\2\2\20\21\3\2\2\2\21\23\3"+
-		"\2\2\2\22\20\3\2\2\2\23\24\7\6\2\2\24\25\b\2\1\2\25!\3\2\2\2\26\27\7\4"+
-		"\2\2\27\31\7\5\2\2\30\32\5\2\2\2\31\30\3\2\2\2\32\33\3\2\2\2\33\31\3\2"+
-		"\2\2\33\34\3\2\2\2\34\35\3\2\2\2\35\36\7\6\2\2\36\37\b\2\1\2\37!\3\2\2"+
-		"\2 \6\3\2\2\2 \t\3\2\2\2 \26\3\2\2\2!.\3\2\2\2\"#\f\4\2\2#$\7\7\2\2$%"+
-		"\5\2\2\5%&\b\2\1\2&-\3\2\2\2\'(\f\3\2\2()\7\b\2\2)*\5\2\2\4*+\b\2\1\2"+
-		"+-\3\2\2\2,\"\3\2\2\2,\'\3\2\2\2-\60\3\2\2\2.,\3\2\2\2./\3\2\2\2/\3\3"+
-		"\2\2\2\60.\3\2\2\2\61\62\5\2\2\2\62\63\b\3\1\2\63\5\3\2\2\2\7\20\33 ,"+
-		".";
+		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\n(\4\2\t\2\4\3\t"+
+		"\3\3\2\3\2\3\2\3\2\3\2\3\2\6\2\r\n\2\r\2\16\2\16\3\2\3\2\3\2\5\2\24\n"+
+		"\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\7\2 \n\2\f\2\16\2#\13\2\3\3"+
+		"\3\3\3\3\3\3\2\3\2\4\2\4\2\3\3\2\7\b)\2\23\3\2\2\2\4$\3\2\2\2\6\7\b\2"+
+		"\1\2\7\b\7\n\2\2\b\24\b\2\1\2\t\n\7\3\2\2\n\f\7\4\2\2\13\r\5\2\2\2\f\13"+
+		"\3\2\2\2\r\16\3\2\2\2\16\f\3\2\2\2\16\17\3\2\2\2\17\20\3\2\2\2\20\21\7"+
+		"\5\2\2\21\22\b\2\1\2\22\24\3\2\2\2\23\6\3\2\2\2\23\t\3\2\2\2\24!\3\2\2"+
+		"\2\25\26\f\4\2\2\26\27\7\6\2\2\27\30\5\2\2\5\30\31\b\2\1\2\31 \3\2\2\2"+
+		"\32\33\f\3\2\2\33\34\t\2\2\2\34\35\5\2\2\4\35\36\b\2\1\2\36 \3\2\2\2\37"+
+		"\25\3\2\2\2\37\32\3\2\2\2 #\3\2\2\2!\37\3\2\2\2!\"\3\2\2\2\"\3\3\2\2\2"+
+		"#!\3\2\2\2$%\5\2\2\2%&\b\3\1\2&\5\3\2\2\2\6\16\23\37!";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

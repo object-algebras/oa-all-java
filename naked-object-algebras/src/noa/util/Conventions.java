@@ -8,32 +8,40 @@ public interface Conventions {
 		return s.startsWith("_");
 	}
 
-	static boolean isToken(String s) {
-		return s.matches("^[A-Z][a-zA-Z]*$");
+	static boolean isEOF(String s) {
+		return s.equals("EOF");
 	}
 	
+	static boolean isNEWLINE(String s) {
+	    return s.equals("NEWLINE");
+	}
+
+	static boolean isToken(String s) {
+        return s.matches("^[A-Z][a-zA-Z_]*$");
+	}
+	
+	static boolean isSepToken(String s) {
+	    return s.matches("^[a-zA-Z_]*$");
+	}
+
 	static boolean isLiteral(String op) {
 		return op.matches("^'.*'$");
 	}
 
 	static boolean isNonTerminal(String s) {
-		return s.matches("^[a-z][a-zA-Z]*$");
+		return s.matches("^[a-z][a-zA-Z_]*$");
 	}
 
 	static boolean isRegular(String s) {
-		return s.matches("^[a-z][a-zA-Z]*[*+?]$");
+		return s.matches("^[a-z][a-zA-Z_]*[*+?]$");
 	}
 	
 	static String getRegularSymbol(String s) {
 		return s.substring(0, s.length() - 1);
 	}
-	
-	static String getRegularOperator(String s) {
-		return s.substring(s.length() - 1);
-	}
-	
+
 	static boolean isSepList(String s) {
-		return s.matches("^[a-z][a-zA-Z]*@'.+'*[*+]$");
+		return s.matches("^[a-z][a-zA-Z_]*@'.+'*[*+]$");
 	}
 	
 	static boolean isZeroOrMoreSepList(String s) {
@@ -48,8 +56,25 @@ public interface Conventions {
 		return s.substring(0, s.indexOf('@'));
 	}
 	
+	// support non-terminal separator
 	static String getSepListToken(String s) {
-		return s.substring(s.indexOf('@') + 1, s.length() - 1);
+		String returnValue = s.substring(s.indexOf('@') + 1, s.length() - 1);
+		if (returnValue.equals("''")) {
+		    return "";
+		}
+		else {
+		    String innerContent=returnValue.substring(1, returnValue.length()-1);
+	        if(!isToken(innerContent)&&!isNonTerminal(innerContent)) {
+	            if (innerContent.charAt(0)=='\'' && innerContent.charAt(innerContent.length()-1)=='\'') {
+	                return innerContent;
+	            } else {
+	                return returnValue;
+	            }
+	        }
+	        else {
+	            return innerContent;
+	        }
+		}
 	}
 
 	static String labelFor(int n, String sym) {

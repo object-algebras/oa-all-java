@@ -35,7 +35,7 @@ public class Demo {
 	private static void testBuilder(String src) {
 		System.out.println("## Using builder");
 		Builder builder = parse(src, Builder.builderBuilder(AllAlg.class));
- 		IEval eval = builder.build(Union.union(AllAlg.class, new EvalExp(), new EvalProg()));
+		IEval eval = builder.build(Union.union(AllAlg.class, new EvalExp(), new EvalProg()));
 		System.out.println("eval " + src + " = " + eval.eval());
 		
 		IPrint print = builder.build(Union.union(AllAlg.class, new PrintExp(), new PrintProg()));
@@ -52,11 +52,10 @@ public class Demo {
 	}
 	
 	public static void main(String[] args) {
+		testBuilder("4 - 3");
 		testBuilder("1 + 2 * 3 ");
-		testBuilder("avg(1,2,3)");
-		testBuilder("avg2(1 2 3)");
+		testBuilder("avg(1  2  3 )");
 		testInjector("1 + 2 * 3 ");
-		testInjector("avg(1 + 2, 2 * 3, 3 + 4)");
-		testInjector("avg2(1 2 3)");
-}
+		testInjector("avg(1 + 2  2 * 3  3 + 4)");
+	}
 }

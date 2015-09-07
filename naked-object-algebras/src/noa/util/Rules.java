@@ -124,7 +124,73 @@ public class Rules implements Conventions {
 
 		addLiftMethod(sb);
 
-		sb.append("}\n");
+		sb.append("}\n\n");
+	}
+	
+	private void addLexerMembers(StringBuilder sb) {
+	    sb.append("@lexer::members{\n");
+	    addPythonLexerMembers(sb);
+	    sb.append("}\n\n");
+	}
+	
+	// some functions that are needed in python antlr rules
+	private void addPythonLexerMembers(StringBuilder sb) {
+	    sb.append("private java.util.LinkedList<Token> tokens = new java.util.LinkedList<>();\n");
+	    sb.append("private java.util.Stack<Integer> indents = new java.util.Stack<>();\n");
+	    sb.append("private int opened = 0;\n");
+	    sb.append("private Token lastToken = null;\n");
+	    sb.append("\n@Override\n");
+	    sb.append("public void emit(Token t) {\n");
+	    sb.append("  super.setToken(t);\n");
+	    sb.append("  tokens.offer(t);\n");
+	    sb.append("}\n");
+	    sb.append("\n@Override\n");
+	    sb.append("public Token nextToken() {\n");
+	    sb.append("  if (_input.LA(1) == EOF && !this.indents.isEmpty()) {\n");
+        sb.append("    for (int i = tokens.size() - 1; i >= 0; i--) {\n");
+        sb.append("      if (tokens.get(i).getType() == EOF) {\n");
+        sb.append("        tokens.remove(i);\n");
+        sb.append("      }\n");
+        sb.append("    }\n");
+        sb.append("    this.emit(commonToken("+name+"Parser.NEWLINE, \"\\n\"));\n");
+        sb.append("    while (!indents.isEmpty()) {\n");
+        sb.append("      this.emit(createDedent());\n");
+        sb.append("      indents.pop();\n");
+        sb.append("    }\n");
+        sb.append("    this.emit(commonToken("+name+"Parser.EOF, \"<EOF>\"));\n");
+        sb.append("  }\n");
+        sb.append("  Token next = super.nextToken();\n");
+        sb.append("  if (next.getChannel() == Token.DEFAULT_CHANNEL) {\n");
+        sb.append("    this.lastToken = next;\n");
+        sb.append("  }\n");
+        sb.append("  return tokens.isEmpty() ? next : tokens.poll();\n");
+        sb.append("}\n");
+        sb.append("\nprivate Token createDedent() {\n");
+        sb.append("  CommonToken dedent = commonToken("+name+"Parser.DEDENT, \"\");\n");
+        sb.append("  dedent.setLine(this.lastToken.getLine());\n");
+        sb.append("  return dedent;\n");
+        sb.append("}\n");
+        sb.append("\nprivate CommonToken commonToken(int type, String text) {\n");
+        sb.append("  int stop = this.getCharIndex() - 1;\n");
+        sb.append("  int start = text.isEmpty() ? stop : stop - text.length() + 1;\n");
+        sb.append("  return new CommonToken(this._tokenFactorySourcePair, type, DEFAULT_TOKEN_CHANNEL, start, stop);\n");
+        sb.append("}\n");
+        sb.append("\nstatic int getIndentationCount(String spaces) {\n");
+        sb.append("  int count = 0;\n");
+        sb.append("  for (char ch : spaces.toCharArray()) {\n");
+        sb.append("    switch (ch) {\n");
+        sb.append("      case '\\t':\n");
+        sb.append("        count += 8 - (count % 8);\n");
+        sb.append("        break;\n");
+        sb.append("      default:\n");
+        sb.append("        count++;\n");
+        sb.append("    }\n");
+        sb.append("  }\n");
+        sb.append("  return count;\n");
+        sb.append("}\n");
+        sb.append("\nboolean atStartOfInput() {\n");
+        sb.append("  return super.getCharPositionInLine() == 0 && super.getLine() == 1;\n");
+        sb.append("}\n");
 	}
 
 	private void addLiftMethod(StringBuilder sb) {
@@ -134,6 +200,30 @@ public class Rules implements Conventions {
 		sb.append("  for (Object ctx: ctxs) {\n");
 		sb.append("    try {\n");
 		sb.append("      l.add((X)ctx.getClass().getField(name).get(ctx));\n");
+		sb.append("    } catch (Throwable e) {\n");
+		sb.append("      throw new RuntimeException(e);\n");
+		sb.append("    }\n");
+		sb.append("  }\n");
+		sb.append("  return l;\n");
+		sb.append("}\n");
+
+		sb.append("private static <X> java.util.List<X> lift(String name, java.util.List<?> ctxs) {\n");
+		sb.append("  java.util.List<X> l = new java.util.ArrayList<X>();\n");
+		sb.append("  for (Object ctx: ctxs) {\n");
+		sb.append("    try {\n");
+		sb.append("      l.add((X)ctx.getClass().getField(name).get(ctx));\n");
+		sb.append("    } catch (Throwable e) {\n");
+		sb.append("      throw new RuntimeException(e);\n");
+		sb.append("    }\n");
+		sb.append("  }\n");
+		sb.append("  return l;\n");
+		sb.append("}\n");
+		
+		sb.append("private static java.util.List<String> liftString(java.util.List<?> ctxs) {\n");
+		sb.append("  java.util.List<String> l = new java.util.ArrayList<String>();\n");
+		sb.append("  for (Object ctx: ctxs) {\n");
+		sb.append("    try {\n");
+		sb.append("      l.add(((Token)ctx).getText());\n");
 		sb.append("    } catch (Throwable e) {\n");
 		sb.append("      throw new RuntimeException(e);\n");
 		sb.append("    }\n");

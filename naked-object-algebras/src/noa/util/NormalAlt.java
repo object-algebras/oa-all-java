@@ -35,50 +35,84 @@ public class NormalAlt extends Alt implements Conventions {
 		return syms.get(2);
 	}
 	
+	private boolean isNEWLINE(String s) {
+	    return s.equals("NEWLINE");
+	}
+
+	private int labelCounter = 0;
+
 	public String toString() {
 		String prod = "";
 		String args = "";
-		int labelCounter = 0;
-		
-		for (String s: syms) {
-			if (isNonTerminal(s)) {
+		// int labelCounter = 0;
+
+		for (String s : syms) {
+		    // add some judgement on null
+			if (isEOF(s)) {
+				prod += s;
+			} else if (s.equals("NEWLINE") | s.equals("INDENT") | s.equals("DEDENT")) {
+			    prod += s;
+			} else if (isNonTerminal(s)) {
 				prod += labelFor(labelCounter, s) + "=" + s + " ";
-				args += "($" + labelFor(labelCounter, s) + "." + returnVariable(s) + "),";
+				args += "($" + labelFor(labelCounter, s) + ".ctx==null?" + "null:"
+				+ "($" + labelFor(labelCounter, s) + "." + returnVariable(s) + ")),";
 				labelCounter += 1;
-			}
-			else if (isRegular(s)) {
+			} else if (isRegular(s)) {
 				String n = getRegularSymbol(s);
-				String x = labelFor(labelCounter, n) + "_list";
-				prod += "(" + x + "+=" + n + ")" + getRegularOperator(s) + " ";
-				System.err.println("PROD = " + prod);
-				args += "lift(\"" + returnVariable(n) + "\", $" + x  + "),";
+				if (n.equals("+")) {
+					prod += labelFor(labelCounter, n) + "+=" + s.substring(0, s.length() - 1) + " ";
+					args += args += "lift(\"" + returnVariable(n) + "\", $" + labelFor(labelCounter, n) + "),";
+				} else {
+					prod += labelFor(labelCounter, n) + "+=" + s + " ";
+					args += "lift(\"" + returnVariable(n) + "\", $" + labelFor(labelCounter, n) + "),";
+				}
 				labelCounter += 1;
-			}
-			else if (isToken(s)) {
+			} else if (isToken(s)) {
 				prod += labelFor(labelCounter, s) + "=" + s + " ";
 				args += s.toLowerCase() + "($" + labelFor(labelCounter, s) + ".text),";
 				labelCounter += 1;
-			}
-			else if (isSepList(s)) {
+			} else if (isSepList(s)) {
+			    // generate seplist rules in 3 situations: token separator, non-terminal separator and symbols
 				String n = getSepListSymbol(s);
 				String label = labelFor(labelCounter, n);
 				String eltHead = label + "=" + n;
 				String eltTail = label + "tail+=" + n;
 				String sep = getSepListToken(s);
-				prod +=  "(" + eltHead+ " (" + sep + " " + eltTail + ")*)";
+				if (isToken(sep)) {
+                    prod += "(" + eltHead + " (" + labelFor(labelCounter, sep) + "+=" + sep + " " + eltTail + ")*)";
+                    args += "liftString($" + labelFor(labelCounter, sep) + "==null? null :$" +labelFor(labelCounter, sep) + "), " + "($" + label + ".ctx==null||" + "$" + label + "tail==null)?" + " null : (lift(\""
+                            + returnVariable(n) + "\", $" + label + "tail, " + "$" + label + "." + returnVariable(n)
+                            + ")),";
+				} else if (isNonTerminal(sep)) {
+                    prod += "(" + eltHead + " (" + labelFor(labelCounter, sep) + "+=" + sep + " " + eltTail + ")*)";
+                    args += " ($" +labelFor(labelCounter, sep) + "==null? " + "null : lift(\"" + returnVariable(sep) + "\", $" + labelFor(labelCounter, sep) + ") ), " + "($" + label + ".ctx==null||" + "$" + label + "tail==null)?" + " null : (lift(\""
+                            + returnVariable(n) + "\", $" + label + "tail, " + "$" + label + "." + returnVariable(n)
+                            + ")),"; 
+				} else {
+                    prod += "(" + eltHead + " (" + sep + " " + eltTail + ")*)";
+                    args += " ($" + label + ".ctx==null||" + "$" + label + "tail==null)?" + " null : (lift(\""
+                            + returnVariable(n) + "\", $" + label + "tail, " + "$" + label + "." + returnVariable(n)
+                            + ")),";
+                }
 				if (isZeroOrMoreSepList(s)) {
 					prod += "?";
 				}
-				args += "lift(\"" + returnVariable(n) + "\", $" + label + "tail, " + "$" + label + "." + returnVariable(n) + "),";
-			}
-			else {
+				// args += "lift(\"" + returnVariable(n) + "\", $" + label +
+				// "tail, " + "$" + label + "."
+				// + returnVariable(n) + "),";
+                labelCounter += 1;  
+			} else {
 				prod += s + " ";
+				labelCounter += 1;
 			}
 		}
 		if (!args.isEmpty()) {
 			// remove trailing comma
 			args = args.substring(0, args.length() - 1);
 		}
+		// if (syms.size() == 0)
+		// prod += "{}";
+		// else
 		prod += " {$" + returnVariable(getNT()) + " = " + BUILDER_FIELD + "." + cons + "(" + args + ");}";
 		return prod;
 	}

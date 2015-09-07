@@ -8,7 +8,7 @@ public class DemoPGen {
 	
 	public static void main(String[] args) {
 		PGen pgen = new PGen(Tokens.class, AllAlg.class);
-		pgen.generate("Demo", "noa.demo.syn", "src/noa/demo/syn/", true);
+		pgen.generate("Demo", "noa.demo.syn", "src/noa/demo/syn/", false, null);
 	}
 	
 }
