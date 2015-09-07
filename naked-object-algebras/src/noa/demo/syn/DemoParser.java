@@ -20,7 +20,8 @@ public class DemoParser extends Parser {
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, WS=7, NUM=8;
+		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, WS=7, NUM=8, INDENT=9, 
+		DEDENT=10;
 	public static final int
 		RULE_exp = 0, RULE_prog = 1;
 	public static final String[] ruleNames = {
@@ -31,7 +32,7 @@ public class DemoParser extends Parser {
 		null, "'avg'", "'('", "')'", "'*'", "'-'", "'+'"
 	};
 	private static final String[] _SYMBOLIC_NAMES = {
-		null, null, null, null, null, null, null, "WS", "NUM"
+		null, null, null, null, null, null, null, "WS", "NUM", "INDENT", "DEDENT"
 	};
 	public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
 
@@ -93,6 +94,28 @@ public class DemoParser extends Parser {
 	  }
 	  return l;
 	}
+	private static <X> java.util.List<X> lift(String name, java.util.List<?> ctxs) {
+	  java.util.List<X> l = new java.util.ArrayList<X>();
+	  for (Object ctx: ctxs) {
+	    try {
+	      l.add((X)ctx.getClass().getField(name).get(ctx));
+	    } catch (Throwable e) {
+	      throw new RuntimeException(e);
+	    }
+	  }
+	  return l;
+	}
+	private static java.util.List<String> liftString(java.util.List<?> ctxs) {
+	  java.util.List<String> l = new java.util.ArrayList<String>();
+	  for (Object ctx: ctxs) {
+	    try {
+	      l.add(((Token)ctx).getText());
+	    } catch (Throwable e) {
+	      throw new RuntimeException(e);
+	    }
+	  }
+	  return l;
+	}
 
 	public DemoParser(TokenStream input) {
 		super(input);
@@ -100,12 +123,12 @@ public class DemoParser extends Parser {
 	}
 	public static class ExpContext extends ParserRuleContext {
 		public Object _exp;
-		public ExpContext exp_3;
+		public ExpContext exp_4;
 		public ExpContext exp_0;
-		public Token NUM_1;
+		public Token NUM_10;
 		public ExpContext exp;
-		public List<ExpContext> exp_6 = new ArrayList<ExpContext>();
-		public ExpContext exp_5;
+		public List<ExpContext> exp_13 = new ArrayList<ExpContext>();
+		public ExpContext exp_6;
 		public Token op_10;
 		public ExpContext exp_1;
 		public TerminalNode NUM() { return getToken(DemoParser.NUM, 0); }
@@ -142,8 +165,8 @@ public class DemoParser extends Parser {
 			case NUM:
 				{
 				setState(5);
-				((ExpContext)_localctx).NUM_1 = match(NUM);
-				((ExpContext)_localctx)._exp =  builder.lit(num((((ExpContext)_localctx).NUM_1!=null?((ExpContext)_localctx).NUM_1.getText():null)));
+				((ExpContext)_localctx).NUM_10 = match(NUM);
+				((ExpContext)_localctx)._exp =  builder.lit(num((((ExpContext)_localctx).NUM_10!=null?((ExpContext)_localctx).NUM_10.getText():null)));
 				}
 				break;
 			case T__0:
@@ -160,7 +183,7 @@ public class DemoParser extends Parser {
 					{
 					setState(9);
 					((ExpContext)_localctx).exp = exp(0);
-					((ExpContext)_localctx).exp_6.add(((ExpContext)_localctx).exp);
+					((ExpContext)_localctx).exp_13.add(((ExpContext)_localctx).exp);
 					}
 					}
 					setState(12); 
@@ -169,7 +192,7 @@ public class DemoParser extends Parser {
 				} while ( _la==T__0 || _la==NUM );
 				setState(14);
 				match(T__2);
-				((ExpContext)_localctx)._exp =  builder.avg(lift("_exp", ((ExpContext)_localctx).exp_6));
+				((ExpContext)_localctx)._exp =  builder.avg(lift("_exp", ((ExpContext)_localctx).exp_13));
 				}
 				break;
 			default:
@@ -189,16 +212,16 @@ public class DemoParser extends Parser {
 					case 1:
 						{
 						_localctx = new ExpContext(_parentctx, _parentState);
-						_localctx.exp_3 = _prevctx;
-						_localctx.exp_3 = _prevctx;
+						_localctx.exp_4 = _prevctx;
+						_localctx.exp_4 = _prevctx;
 						pushNewRecursionContext(_localctx, _startState, RULE_exp);
 						setState(19);
 						if (!(precpred(_ctx, 2))) throw new FailedPredicateException(this, "precpred(_ctx, 2)");
 						setState(20);
 						match(T__3);
 						setState(21);
-						((ExpContext)_localctx).exp_5 = exp(3);
-						((ExpContext)_localctx)._exp =  builder.mul((((ExpContext)_localctx).exp_3._exp),(((ExpContext)_localctx).exp_5._exp));
+						((ExpContext)_localctx).exp_6 = exp(3);
+						((ExpContext)_localctx)._exp =  builder.mul((((ExpContext)_localctx).exp_4==null?null:(((ExpContext)_localctx).exp_4._exp)),(((ExpContext)_localctx).exp_6==null?null:(((ExpContext)_localctx).exp_6._exp)));
 						}
 						break;
 					case 2:
@@ -244,7 +267,7 @@ public class DemoParser extends Parser {
 
 	public static class ProgContext extends ParserRuleContext {
 		public Object _prog;
-		public ExpContext exp_1;
+		public ExpContext exp_0;
 		public ExpContext exp() {
 			return getRuleContext(ExpContext.class,0);
 		}
@@ -261,8 +284,8 @@ public class DemoParser extends Parser {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(34);
-			((ProgContext)_localctx).exp_1 = exp(0);
-			((ProgContext)_localctx)._prog =  builder.start((((ProgContext)_localctx).exp_1._exp));
+			((ProgContext)_localctx).exp_0 = exp(0);
+			((ProgContext)_localctx)._prog =  builder.start((((ProgContext)_localctx).exp_0==null?null:(((ProgContext)_localctx).exp_0._exp)));
 			}
 		}
 		catch (RecognitionException re) {
@@ -294,7 +317,7 @@ public class DemoParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\n(\4\2\t\2\4\3\t"+
+		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\f(\4\2\t\2\4\3\t"+
 		"\3\3\2\3\2\3\2\3\2\3\2\3\2\6\2\r\n\2\r\2\16\2\16\3\2\3\2\3\2\5\2\24\n"+
 		"\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\7\2 \n\2\f\2\16\2#\13\2\3\3"+
 		"\3\3\3\3\3\3\2\3\2\4\2\4\2\3\3\2\7\b)\2\23\3\2\2\2\4$\3\2\2\2\6\7\b\2"+
