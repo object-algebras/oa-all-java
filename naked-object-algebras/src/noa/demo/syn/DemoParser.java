@@ -123,12 +123,12 @@ public class DemoParser extends Parser {
 	}
 	public static class ExpContext extends ParserRuleContext {
 		public Object _exp;
-		public ExpContext exp_4;
+		public ExpContext exp_7;
 		public ExpContext exp_0;
 		public Token NUM_10;
 		public ExpContext exp;
 		public List<ExpContext> exp_13 = new ArrayList<ExpContext>();
-		public ExpContext exp_6;
+		public ExpContext exp_9;
 		public Token op_10;
 		public ExpContext exp_1;
 		public TerminalNode NUM() { return getToken(DemoParser.NUM, 0); }
@@ -212,16 +212,16 @@ public class DemoParser extends Parser {
 					case 1:
 						{
 						_localctx = new ExpContext(_parentctx, _parentState);
-						_localctx.exp_4 = _prevctx;
-						_localctx.exp_4 = _prevctx;
+						_localctx.exp_7 = _prevctx;
+						_localctx.exp_7 = _prevctx;
 						pushNewRecursionContext(_localctx, _startState, RULE_exp);
 						setState(19);
 						if (!(precpred(_ctx, 2))) throw new FailedPredicateException(this, "precpred(_ctx, 2)");
 						setState(20);
 						match(T__3);
 						setState(21);
-						((ExpContext)_localctx).exp_6 = exp(3);
-						((ExpContext)_localctx)._exp =  builder.mul((((ExpContext)_localctx).exp_4==null?null:(((ExpContext)_localctx).exp_4._exp)),(((ExpContext)_localctx).exp_6==null?null:(((ExpContext)_localctx).exp_6._exp)));
+						((ExpContext)_localctx).exp_9 = exp(3);
+						((ExpContext)_localctx)._exp =  builder.mul((((ExpContext)_localctx).exp_7==null?null:(((ExpContext)_localctx).exp_7._exp)),(((ExpContext)_localctx).exp_9==null?null:(((ExpContext)_localctx).exp_9._exp)));
 						}
 						break;
 					case 2:

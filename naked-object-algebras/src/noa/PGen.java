@@ -1,7 +1,6 @@
 package noa;
 
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,13 +8,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.antlr.v4.Tool;
 import org.antlr.v4.tool.Grammar;
 import org.antlr.v4.tool.ast.GrammarRootAST;
-
 import com.sun.istack.internal.FragmentContentHandler;
-
 import noa.annos.Fragment;
 import noa.annos.Level;
 import noa.annos.Skip;
@@ -77,6 +73,41 @@ public class PGen {
 		t.process(theG, true);
 	}
 
+    public void generateFromGrammarFile(String name, String pkg, String path, String grammarPath) {
+        PGen.pGenName = name;
+        String antlrContent = readToString(grammarPath);
+        Tool t = new org.antlr.v4.Tool();
+        GrammarRootAST g = t.parseGrammarFromString(antlrContent);
+        Grammar theG = t.createGrammar(g);
+        t.gen_listener = false;
+        t.gen_visitor = false;
+        t.gen_dependencies = false;
+        theG.fileName = path;
+        t.process(theG, true);
+    }
+
+    public static String readToString(String fileName) {
+        String encoding = "ascii";
+        File file = new File(fileName);
+        Long filelength = file.length();
+        byte[] filecontent = new byte[filelength.intValue()];
+        try {
+            FileInputStream in = new FileInputStream(file);
+            in.read(filecontent);
+            in.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            return new String(filecontent, encoding);
+        } catch (UnsupportedEncodingException e) {
+            System.err.println("The OS does not support " + encoding);
+            e.printStackTrace();
+            return null;
+        }
+    }
 	// add a new boolean field fragment
 	// fragment is true if the token is a fragment in antlr
 	static class Tk implements Comparable<Tk> {
