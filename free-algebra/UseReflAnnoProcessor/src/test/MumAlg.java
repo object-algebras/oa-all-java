@@ -1,5 +1,6 @@
 package test;
 
+import refl.MumAlgGen;
 import annotation.Refl;
 
 @Refl
@@ -28,4 +29,12 @@ import annotation.Refl;
     //
     //	E invokeNode(String func, List<E> args);
 
+}
+
+class Test {
+    public static void main(String[] args) {
+        MumAlgGen fact = new MumAlgGen();
+        MumAlgGen.TypeP program = fact.start(fact.booleanNode(true));
+        System.out.println(program);
+    }
 }

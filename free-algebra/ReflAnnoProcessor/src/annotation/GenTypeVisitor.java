@@ -1,8 +1,8 @@
 package annotation;
 
 import java.util.List;
-
 import javax.lang.model.type.*;
+import annotation.utils.Utils;
 
 public class GenTypeVisitor implements TypeVisitor<String, String[]> {
 
@@ -10,15 +10,6 @@ public class GenTypeVisitor implements TypeVisitor<String, String[]> {
     public static final String TAB2 = "\t\t";
     public static final String TAB3 = "\t\t\t";
     public static final String TAB4 = "\t\t\t\t";
-    
-	int arrayContains(String[] ls, String s) {
-		int i = 0;
-		for (String ts: ls) {
-			if (s.equals(ts)) return i;
-			i++;
-		}
-		return -1;
-	}
 	
 	@Override
 	public String visitExecutable(ExecutableType t, String[] p) {
@@ -37,9 +28,9 @@ public class GenTypeVisitor implements TypeVisitor<String, String[]> {
 		
 		for (int i = 0; i < lp.size(); ++i){
 			// contains a list of type variables
-			if (arrayContains(lListTypeArgs, lp.get(i).toString()) != -1){
+            if (Utils.arrayContains(lListTypeArgs, lp.get(i).toString()) != -1) {
 				res += "java.util.List<E> p" + i;
-			} else if (arrayContains(lTypeArgs, lp.get(i).toString()) != -1){
+            } else if (Utils.arrayContains(lTypeArgs, lp.get(i).toString()) != -1) {
 				res += "Type p" + i;
 			} else {
 				res += lp.get(i).toString() + " p" + i;
@@ -63,7 +54,7 @@ public class GenTypeVisitor implements TypeVisitor<String, String[]> {
 //		        + "lp.get(i).getKind().isPrimitive(): " + lp.get(i).getKind().isPrimitive() + "\n\n"; 
 		    //----------- debug code end --------------                
 		    
-		    if (arrayContains(lTypeArgs, lp.get(i).toString()) != -1){
+            if (Utils.arrayContains(lTypeArgs, lp.get(i).toString()) != -1) {
 		        res += (firstArg? "":", ") + "p" + i + ".accept(alg)";
 		        firstArg = false;
 			} else if (lp.get(i).getKind().isPrimitive()) {

@@ -25,7 +25,7 @@ public class Main {
         };
 
         ExpAlgGen fact = new ExpAlgGen();
-        ExpAlgGen.Type e = fact.Add(fact.Lit(3), fact.Lit(2));
+        ExpAlgGen.TypeE e = fact.Add(fact.Lit(3), fact.Lit(2));
         System.out.println(e.accept(ppExp));
 
 
@@ -50,7 +50,7 @@ public class Main {
         };
         
         OtherAlgGen o = new OtherAlgGen();
-        OtherAlgGen.Type e2 = o.ifNode(o.bool(true), o.bool(false), o.bool(true));
+        OtherAlgGen.TypeE e2 = o.ifNode(o.bool(true), o.bool(false), o.bool(true));
         System.out.println(e2.accept(ppOther));        
     }
 }
