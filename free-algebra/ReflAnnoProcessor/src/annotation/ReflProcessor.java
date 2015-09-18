@@ -1,9 +1,7 @@
 package annotation;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Set;
-
+import java.util.*;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -91,22 +89,38 @@ public class ReflProcessor extends AbstractProcessor {
     String createGenClass(String folder, Element element, String[] lTypeArgs, String typeArgs) {
         String algName = element.getSimpleName().toString();
         String algGenName = algName + "Gen";
+        List<String> lTypeArgsType = new ArrayList<String>();
+        for (String typeArg : lTypeArgs) {
+            lTypeArgsType.add("Type" + typeArg);
+        }
+        String sortString = "";
+        for (int i = 0; i < lTypeArgsType.size(); ++i) {
+            sortString += algGenName + "." + lTypeArgsType.get(i);
+            if (i != lTypeArgsType.size() - 1)
+                sortString += " ,";
+        }
         String classContent = "package " + folder + ";\n\n"
                 + "import " + getPackage(element) + "." + algName + ";\n\n" 
-                + "public final class " + algGenName + " implements " + algName + "<" + algGenName + ".Type> {\n";
-        classContent += TAB + "public interface Type {\n" +
-                TAB2 + "<E> E accept(" + algName + "<E> alg);\n" +
-                TAB + "}\n\n";
+                + "public final class " + algGenName + " implements " + algName + "<" + sortString + "> {\n";
+
+        for (int i = 0; i < lTypeArgsType.size(); ++i) {
+            classContent += TAB + "public interface " + lTypeArgsType.get(i) + " {\n" +
+                    TAB2 + "<" + typeArgs + "> " + lTypeArgs[i] + " accept(" + algName + "<" + typeArgs + "> alg);\n" +
+                    TAB + "}\n\n";
+        }
+
         List<? extends Element> le = element.getEnclosedElements();
         for (Element e: le){
             String methodName = e.getSimpleName().toString();
             String[] args = {methodName, typeArgs, algName};
             
             //----------- debug code begin --------------
-//            classContent += "Element e: " + e + "\n";
-//            classContent += "e.asType(): " + e.asType().toString() + "\n";
-//            classContent += "typeArgs: " + typeArgs + "\n";
-//            classContent += "lTypeArgs: " + lTypeArgs.toString() + "\n"; 
+            classContent += "/* \n";
+            classContent += "Element e: " + e + "\n";
+            classContent += "e.asType(): " + e.asType().toString() + "\n";
+            classContent += "typeArgs: " + typeArgs + "\n";
+            classContent += "lTypeArgs: " + lTypeArgs.toString() + "\n";
+            classContent += "*/ \n";
             //----------- debug code end --------------    
             
             
