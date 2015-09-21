@@ -20,7 +20,7 @@ import annotation.Refl;
 	E booleanNode(boolean x);
     P start(E es);
 
-    //    E longNode(Object x);
+    E longNode(Object x);
     //
     E mumblerSymbol(String symbolName);
     //

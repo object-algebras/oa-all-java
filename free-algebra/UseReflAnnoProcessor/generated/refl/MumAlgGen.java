@@ -32,6 +32,13 @@ public final class MumAlgGen implements MumAlg<MumAlgGen.TypeE ,MumAlgGen.TypeP>
 			}
 		};
 	}
+	public TypeE longNode(java.lang.Object p0) {
+		return new TypeE() {
+			public <E,P> E accept(MumAlg<E,P> alg) {
+					return alg.longNode(p0);
+			}
+		};
+	}
 	public TypeE mumblerSymbol(java.lang.String p0) {
 		return new TypeE() {
 			public <E,P> E accept(MumAlg<E,P> alg) {

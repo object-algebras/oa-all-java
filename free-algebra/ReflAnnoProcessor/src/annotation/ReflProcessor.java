@@ -154,10 +154,7 @@ public class ReflProcessor extends AbstractProcessor {
                 if (Utils.arrayContains(lTypeArgs, p.asType().toString()) != -1) {
                     res += (firstArg ? "" : ", ") + "p" + k + ".accept(alg)";
                     firstArg = false;
-                } else if (p.asType().getKind().isPrimitive()) {
-                    res += (firstArg ? "" : ", ") + "p" + k;
-                    firstArg = false;
-                } else if (p.asType().toString().equals("java.lang.String")) {
+                } else {
                     res += (firstArg ? "" : ", ") + "p" + k;
                     firstArg = false;
                 }
