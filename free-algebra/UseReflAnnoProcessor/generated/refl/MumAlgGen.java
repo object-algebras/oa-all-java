@@ -1,7 +1,8 @@
 package refl;
 
 import test.MumAlg;
-
+import java.util.List;
+import java.util.stream.Collectors;
 public final class MumAlgGen implements MumAlg<MumAlgGen.TypeE ,MumAlgGen.TypeP> {
 	public interface TypeE {
 		<E,P> E accept(MumAlg<E,P> alg);
@@ -32,6 +33,27 @@ public final class MumAlgGen implements MumAlg<MumAlgGen.TypeE ,MumAlgGen.TypeP>
 			}
 		};
 	}
+	public TypeE invokeNode(java.lang.String p0, List<TypeE> p1) {
+		return new TypeE() {
+			public <E,P> E accept(MumAlg<E,P> alg) {
+					return alg.invokeNode(p0, p1.stream().map((pTypeE) -> pTypeE.accept(alg)).collect(Collectors.toList()));
+			}
+		};
+	}
+	public TypeE lambdaNode(List<TypeE> p0, List<TypeE> p1) {
+		return new TypeE() {
+			public <E,P> E accept(MumAlg<E,P> alg) {
+					return alg.lambdaNode(p0.stream().map((pTypeE) -> pTypeE.accept(alg)).collect(Collectors.toList()), p1.stream().map((pTypeE) -> pTypeE.accept(alg)).collect(Collectors.toList()));
+			}
+		};
+	}
+	public TypeE listNode(List<TypeE> p0) {
+		return new TypeE() {
+			public <E,P> E accept(MumAlg<E,P> alg) {
+					return alg.listNode(p0.stream().map((pTypeE) -> pTypeE.accept(alg)).collect(Collectors.toList()));
+			}
+		};
+	}
 	public TypeE longNode(java.lang.Object p0) {
 		return new TypeE() {
 			public <E,P> E accept(MumAlg<E,P> alg) {
@@ -57,6 +79,13 @@ public final class MumAlgGen implements MumAlg<MumAlgGen.TypeE ,MumAlgGen.TypeP>
 		return new TypeP() {
 			public <E,P> P accept(MumAlg<E,P> alg) {
 					return alg.start(p0.accept(alg));
+			}
+		};
+	}
+	public TypeP start(List<TypeE> p0) {
+		return new TypeP() {
+			public <E,P> P accept(MumAlg<E,P> alg) {
+					return alg.start(p0.stream().map((pTypeE) -> pTypeE.accept(alg)).collect(Collectors.toList()));
 			}
 		};
 	}

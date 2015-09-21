@@ -13,11 +13,11 @@ import annotation.Refl;
     //
     E quoteNode(E literalNode);
     //
-    //	E lambdaNode(List<E> args, List<E> rtns);
+    E lambdaNode(List<E> args, List<E> rtns);
     //
-    //    E listNode(List<E> args);
+    E listNode(List<E> args);
 
-	E booleanNode(boolean x);
+    E booleanNode(boolean x);
     P start(E es);
 
     E longNode(Object x);
@@ -26,9 +26,9 @@ import annotation.Refl;
     //
     E stringNode(String x);
     //
-    //	P start(List<E> es);
+    P start(List<E> es);
     //
-    //	E invokeNode(String func, List<E> args);
+    E invokeNode(String func, List<E> args);
 
 }
 

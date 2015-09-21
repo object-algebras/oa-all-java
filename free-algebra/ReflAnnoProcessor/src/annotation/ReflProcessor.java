@@ -74,6 +74,7 @@ public class ReflProcessor extends AbstractProcessor {
         String classContent = "package " + folder + ";\n\n"
                 + "import java.util.List;\n"
                 + "import java.util.ArrayList;\n"
+                + "import java.util.stream.Collectors;\n"
                 + "import library.ReflAlg;\n"
                 + "import " + getPackage(element) + "." + algName + ";\n\n" 
                 + "public abstract class " + "Refl" + algName + "<E> implements " + algName + "<E> {\n\n";
@@ -102,7 +103,11 @@ public class ReflProcessor extends AbstractProcessor {
                 sortString += " ,";
         }
         String res = "package " + folder + ";\n\n"
-                + "import " + getPackage(element) + "." + algName + ";\n\n" 
+                + "import " + getPackage(element) + "." + algName + ";\n"
+                + "import java.util.List;\n"
+                + "import java.util.ArrayList;\n"
+                + "import java.util.stream.Collectors;\n"
+
                 + "public final class " + algGenName + " implements " + algName + "<" + sortString + "> {\n";
 
         for (int i = 0; i < lTypeArgsType.length; ++i) {
@@ -150,8 +155,12 @@ public class ReflProcessor extends AbstractProcessor {
                 //                  + "lp.get(i).getKind().name(): " + lp.get(i).getKind().name() + "\n"
                 //                  + "lp.get(i).getKind().isPrimitive(): " + lp.get(i).getKind().isPrimitive() + "\n\n"; 
                 //----------- debug code end --------------                
-
-                if (Utils.arrayContains(lTypeArgs, p.asType().toString()) != -1) {
+                if (Utils.arrayContains(lListTypeArgs, p.asType().toString()) != -1) {
+                    res += firstArg ? "" : ", ";
+                    firstArg = false;
+                    res += String
+                            .format("p%s.stream().map((pTypeE) -> pTypeE.accept(alg)).collect(Collectors.toList())", k);
+                } else if (Utils.arrayContains(lTypeArgs, p.asType().toString()) != -1) {
                     res += (firstArg ? "" : ", ") + "p" + k + ".accept(alg)";
                     firstArg = false;
                 } else {
@@ -187,7 +196,7 @@ public class ReflProcessor extends AbstractProcessor {
         int j = Utils.arrayContains(lTypeArgs, type);
         String genType = type;
         if (i != -1) {
-            genType = lListTypeArgs[i];
+            genType = String.format("List<%s>", lTypeArgsType[i]);
         } else if (j != -1) {
             genType = lTypeArgsType[j];
         }
