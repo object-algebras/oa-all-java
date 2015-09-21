@@ -114,7 +114,7 @@ public class ReflProcessor extends AbstractProcessor {
         List<? extends ExecutableElement> le = (List<? extends ExecutableElement>) element.getEnclosedElements();
         for (ExecutableElement e : le) {
             String mName = e.getSimpleName().toString();
-            String[] args = { mName, typeArgs, algName };
+            //            String[] args = { mName, typeArgs, algName };
             String[] lListTypeArgs = new String[lTypeArgs.length];
             String mReturnType = e.getReturnType().toString();
             for (int i = 0; i < lTypeArgs.length; ++i) {
