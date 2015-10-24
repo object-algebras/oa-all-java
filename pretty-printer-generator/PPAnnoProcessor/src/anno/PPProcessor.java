@@ -36,6 +36,7 @@ public class PPProcessor extends AbstractProcessor {
 			RoundEnvironment env) {
 
 		String folder = "ppgen";
+		// Collect all the interfaces with PP
 		for (Element element : env.getElementsAnnotatedWith(PP.class)) {
 			// Initialization.
 			TypeMirror tm = element.asType();
@@ -66,19 +67,35 @@ public class PPProcessor extends AbstractProcessor {
 	private String getName(Element e) {
 		return e.getSimpleName().toString();
 	}
+	
+	private int getNumOfTypeParams(TypeElement e) {
+		return e.getTypeParameters().size();
+	}
+	
+	private String produceClassHeader(int numOfParams) {
+		String s = "<String";
+		// Should iterate for numOfParams - 1 times.
+		for (int count = 1; count < numOfParams; count++) {
+			s += ", String";
+		}
+		s += ">";
+		return s;
+	}
 
 	private String createPPClass(String folder, TypeElement te,
 			String[] lTypeArgs, String typeArgs) {
 		// This part is the headers.
+		// Example:
 		/*
 		 * package ppgen; import pptest.ExpAlg; public class PPExpAlg implements
 		 * ExpAlg<String> {
 		 */
 		String name = getName(te);
+		int numOfTypeParams = getNumOfTypeParams(te);
 		String res = "package " + folder + ";\n\n";
 		res += "import " + getPackage(te) + "." + name + ";\n\n";
 		res += "public class " + nameGenPP(name) + " implements " + name
-				+ "<String> {\n";
+				+ produceClassHeader(numOfTypeParams) + " {\n";
 
 		// For each data type that we know to exist in the target language,
 		// we'll generate the appropriate printing method. The actual generation
@@ -128,7 +145,8 @@ public class PPProcessor extends AbstractProcessor {
 		String syn = e.getAnnotation(Syntax.class).value();
 		String[] synList = syn.split(" ");
 
-		// What do these two numbers do?
+		// i is used to record which parameter we're currently trying to print. (ird)
+		// The "synList" is to say we separate different symbols in the one line of notation. j is to record which one among the list we're currently printing.
 		int i = 0, j = 2;
 		while (j < synList.length) {
 			while (j < synList.length && synList[j].startsWith("\'")) {
