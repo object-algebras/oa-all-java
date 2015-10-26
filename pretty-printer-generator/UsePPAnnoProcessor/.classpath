@@ -2,12 +2,13 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/PPAnnoProcessor/PPAnnoProcessor.jar"/>
 	<classpathentry kind="src" path="generated">
 		<attributes>
 			<attribute name="optional" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/naked-object-algebras"/>
+	<classpathentry kind="lib" path="/PPAnnoProcessor/PPAnnoProcessor.jar"/>
+	<classpathentry kind="lib" path="lib/jpplib-0.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

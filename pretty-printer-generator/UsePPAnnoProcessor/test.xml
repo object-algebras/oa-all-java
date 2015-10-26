@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!-- Here's a comment, just to see what happens with it-->
+<?xml-stylesheet type="text/css" href="anatomy.css"?>
+<body>
+  <head>
+    <mouth lang="en">
+    	The mouth is particularly good at talking.  But it can
+    	also eat.  And kiss.  It's good for <em>lots</em> of things.
+    	And while we're at it, let's test some entities.
+    	The less-sign: &lt;,
+    	The greater-sign: &gt; 
+    	The ampersand: &amp; 
+    	The double quote: &quot; 
+    </mouth>
+    <ear>
+        The ear is particularly bad at hearing.
+    </ear>
+    <eye><pupil/><retina/><lashes/></eye>
+  </head>
+  <arm>
+    <ellbow attributeWithEntities="&quot;&apos;&amp;&lt;&gt;"
+     andAnother="just to fill the line."/>
+    <hand>
+	    <finger lang="de" name="thumb">
+			Das ist der Daumen
+	    </finger>
+	    <finger lang="de" name="index">
+			Der schüttelt die Pflaumen
+	    </finger>
+	    <finger lang="de" name="middle">
+			Der hebt sie alle auf
+	    </finger>
+	    <finger lang="de" name="ring">
+			Der trägt sie schnell nach Haus
+	    </finger>
+	    <finger lang="de" name="baby">
+			Und der Klitzeklitzekleine,
+			   <em>der</em> ißt sie alle auf.
+	    </finger>
+    </hand>
+  </arm>
+</body>
