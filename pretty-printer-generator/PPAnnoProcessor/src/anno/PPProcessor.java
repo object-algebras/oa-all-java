@@ -155,13 +155,15 @@ public class PPProcessor extends AbstractProcessor {
 			// If the symbol starts with ' then this symbols is a keyword.
 			while (j < synList.length && synList[j].startsWith("\'")) {
 				// substring(1, length() - 1) is to get rid of the ' ' at both ends.
+				String currentSyn = synList[j].substring(1, synList[j].length() - 1);
 				// The \" is because we want to print keywords literally in the final printed text.
-				res += "\"" + synList[j].substring(1, synList[j].length() - 1);
-				// Note a space is added after the keyword, if j \= 2 (the starting parentheses)
-				if (j > 2 && j < synList.length - 1) {
-					res += " \"";
-				} else {
+				res += "\"" + currentSyn;
+				// Note a space is added after the keyword, if j is not a starting parentheses or the last parentheses.
+				if (currentSyn.contains("(") || j > synList.length - 2) {
 					res += "\"";
+				} else {
+					
+					res += " \"";
 				}
 				j++;
 				if (j < synList.length)
@@ -203,7 +205,16 @@ public class PPProcessor extends AbstractProcessor {
 					}
 				} else { // int, bool, float....
 					// In this case it's a primitive type. We should just directly print its literal representation.
+					// The \"\" here is just a hack to force the param to be displayed as String without having to call `toString`...
 					res += "\"\" + " + paramName;
+					
+					// We add a space unless this is the second-to-last argument in which case it'll be followed by a ) so no need for a space.
+					if (j < synList.length - 2) {
+						// The concatenation operator in Java.
+						res += " + ";
+						// This is a literal space.
+						res += " \" \" ";
+					}
 				}
 				i++;
 				j++;
