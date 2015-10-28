@@ -44,14 +44,25 @@ public class Main {
 		bodyList.add(alg.mumblerSymbol("x"));
 		bodyList.add(alg.stringNode("x"));
 
-//		alg.listNode()
 		return alg.lambdaNode(argsList, bodyList);
-
-//		return alg.lambdaNode(listNode(argsList), listNode(bodyList));
 	}
-
+	
 	static <P, E> E makeSymbol(MumAlg<P, E> alg) {
 		return alg.mumblerSymbol("x");
+	}
+	
+	static <P, E> E makeInvoke (MumAlg<P, E> alg) {
+		ArrayList<E> argsList = new ArrayList<E>();
+		argsList.add(alg.mumblerSymbol("y"));
+		argsList.add(alg.longNode(6));
+		return alg.invokeNode("funcX", argsList);
+	}
+	
+	static <P, E> P makeStart (MumAlg<P, E> alg) {
+		ArrayList<E> list = new ArrayList<E>();
+		list.add(alg.mumblerSymbol("a"));
+		list.add(alg.mumblerSymbol("x"));
+		return alg.start(list);
 	}
 
 	public static void main(String[] args) {
@@ -78,5 +89,11 @@ public class Main {
 
 		String symbolTest = makeSymbol(new PPMumAlg());
 		System.out.println(symbolTest);
+		
+		String invokeTest = makeInvoke(new PPMumAlg());
+		System.out.println(invokeTest);
+		
+		String invokeStart = makeStart(new PPMumAlg());
+		System.out.println(invokeStart);
 	}
 }
