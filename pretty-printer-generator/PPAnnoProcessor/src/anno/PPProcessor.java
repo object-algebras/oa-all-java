@@ -133,6 +133,7 @@ public class PPProcessor extends AbstractProcessor {
 					.asType().toString()) != -1) {
 				res += "String p" + i;
 			} else {
+				// Have to add space between parameters otherwise they'll all be crammed together.
 				res += params.get(i).asType().toString() + " p" + i;
 			}
 			if (i < params.size() - 1)
@@ -147,24 +148,33 @@ public class PPProcessor extends AbstractProcessor {
 
 		// i is used to record which parameter we're currently trying to print. (ird)
 		// The "synList" is to say we separate different symbols in the one line of notation. j is to record which one among the list we're currently printing.
+		
+		// It seems that we start from j = 2 bceause the first two things are `form =`, mandatory components of the annotation.
 		int i = 0, j = 2;
 		while (j < synList.length) {
+			// If the symbol starts with ' then this symbols is a keyword.
 			while (j < synList.length && synList[j].startsWith("\'")) {
+				// substring(1, length() - 1) is to get rid of the ' ' at both ends.
+				// The \" is because we want to print keywords literally in the final printed text.
 				res += "\"" + synList[j].substring(1, synList[j].length() - 1)
 						+ "\"";
 				j++;
 				if (j < synList.length)
+					// Just the string concatenator
 					res += " + ";
 			}
+			// It seems that the additional check is because j could also be incremented inside of the while loop itself. (j++)
 			if (j < synList.length) {
 				String paramName = "p" + i;
 				String str = synList[j];
-        // So "@" indicates the separators
+				// So "@" indicates the place where separators are to appear following it.
 				if (str.contains("@")) {
 					String separator = getSeparator(synList[j]);
 					if (AnnoUtils.arrayContains(lListTypeArgs, params.get(i)
 							.asType().toString()) != -1) {
-						res += "String.join(\"" + separator + "\", "
+						// In this case the argument itself is a list. Thus we use String.join to join various arguments together.
+						// Note a space is added after each separator and before the next param in the list.
+						res += "String.join(\"" + separator + " \", "
 								+ paramName + ")";
 					} else {
 						// TODO: error: list type does not match!
@@ -176,13 +186,17 @@ public class PPProcessor extends AbstractProcessor {
 					// TODO: error: list type does not match!
 				} else if (AnnoUtils.arrayContains(lTypeArgs, params.get(i)
 						.asType().toString()) != -1) {
+					// In this case it's just one single argument, not a list.
+					// Have to add space between parameters otherwise they'll all be crammed together.
 					res += paramName;
 				} else { // int, bool, float....
+					// In this case it's a primitive type. We should just directly print its literal representation.
 					res += "\"\" + " + paramName;
 				}
 				i++;
 				j++;
 				if (j < synList.length)
+					// This means we should still have other symbols in the syntax definition. Conncet them with a +
 					res += " + ";
 			}
 		}
