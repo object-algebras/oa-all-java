@@ -156,8 +156,13 @@ public class PPProcessor extends AbstractProcessor {
 			while (j < synList.length && synList[j].startsWith("\'")) {
 				// substring(1, length() - 1) is to get rid of the ' ' at both ends.
 				// The \" is because we want to print keywords literally in the final printed text.
-				res += "\"" + synList[j].substring(1, synList[j].length() - 1)
-						+ "\"";
+				res += "\"" + synList[j].substring(1, synList[j].length() - 1);
+				// Note a space is added after the keyword, if j \= 2 (the starting parentheses)
+				if (j > 2 && j < synList.length - 1) {
+					res += " \"";
+				} else {
+					res += "\"";
+				}
 				j++;
 				if (j < synList.length)
 					// Just the string concatenator
@@ -187,8 +192,15 @@ public class PPProcessor extends AbstractProcessor {
 				} else if (AnnoUtils.arrayContains(lTypeArgs, params.get(i)
 						.asType().toString()) != -1) {
 					// In this case it's just one single argument, not a list.
-					// Have to add space between parameters otherwise they'll all be crammed together.
 					res += paramName;
+					// Have to add space between parameters otherwise they'll all be crammed together.
+					// We add a space unless this is the second-to-last argument in which case it'll be followed by a ) so no need for a space.
+					if (j < synList.length - 2) {
+						// The concatenation operator in Java.
+						res += " + ";
+						// This is a literal space.
+						res += " \" \" ";
+					}
 				} else { // int, bool, float....
 					// In this case it's a primitive type. We should just directly print its literal representation.
 					res += "\"\" + " + paramName;
