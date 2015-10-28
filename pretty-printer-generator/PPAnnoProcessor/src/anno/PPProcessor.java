@@ -158,7 +158,7 @@ public class PPProcessor extends AbstractProcessor {
 				String currentSyn = synList[j].substring(1, synList[j].length() - 1);
 				// The \" is because we want to print keywords literally in the final printed text.
 				res += "\"" + currentSyn;
-				// Note a space is added after the keyword, if j is not a starting parentheses or the last parentheses.
+				// Note a space is added after the keyword, if j is not a starting parentheses or the last symbol.
 				if (currentSyn.contains("(") || j > synList.length - 2) {
 					res += "\"";
 				} else {
@@ -196,8 +196,8 @@ public class PPProcessor extends AbstractProcessor {
 					// In this case it's just one single argument, not a list.
 					res += paramName;
 					// Have to add space between parameters otherwise they'll all be crammed together.
-					// We add a space unless this is the second-to-last argument in which case it'll be followed by a ) so no need for a space.
-					if (j < synList.length - 2) {
+					// We add a space unless the param is the last one or is followed by )
+					if (!(j == synList.length - 1) && !(synList[j+1].contains(")"))) {
 						// The concatenation operator in Java.
 						res += " + ";
 						// This is a literal space.
@@ -208,8 +208,8 @@ public class PPProcessor extends AbstractProcessor {
 					// The \"\" here is just a hack to force the param to be displayed as String without having to call `toString`...
 					res += "\"\" + " + paramName;
 					
-					// We add a space unless this is the second-to-last argument in which case it'll be followed by a ) so no need for a space.
-					if (j < synList.length - 2) {
+					// We add a space unless the literal is the last one or is followed by )
+					if (!(j == synList.length - 1) && !(synList[j+1].contains(")"))) {
 						// The concatenation operator in Java.
 						res += " + ";
 						// This is a literal space.
