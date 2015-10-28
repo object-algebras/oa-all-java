@@ -9,6 +9,7 @@ import javax.tools.JavaFileObject;
 import anno.utils.AnnoUtils;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -67,11 +68,11 @@ public class PPProcessor extends AbstractProcessor {
 	private String getName(Element e) {
 		return e.getSimpleName().toString();
 	}
-	
+
 	private int getNumOfTypeParams(TypeElement e) {
 		return e.getTypeParameters().size();
 	}
-	
+
 	private String produceClassHeader(int numOfParams) {
 		String s = "<String";
 		// Should iterate for numOfParams - 1 times.
@@ -116,110 +117,141 @@ public class PPProcessor extends AbstractProcessor {
 		String[] lTypeArgs = typeArgs.split(",");
 		String[] lListTypeArgs = new String[lTypeArgs.length];
 
-		for (int i = 0; i < lTypeArgs.length; ++i) {
-			lListTypeArgs[i] = "java.util.List<" + lTypeArgs[i] + ">";
+		for (int listTypeArgsCount = 0; listTypeArgsCount < lTypeArgs.length; ++listTypeArgsCount) {
+			lListTypeArgs[listTypeArgsCount] = "java.util.List<"
+					+ lTypeArgs[listTypeArgsCount] + ">";
 		}
 
 		String res = "";
 		// String is to say the thing we print shall of course be a string.
 		res += TAB + "public String " + e.getSimpleName() + "(";
 		List<? extends VariableElement> params = e.getParameters();
-		// Determine the correct Java type of the parameter to be fed into this printing method
-		for (int i = 0; i < params.size(); ++i) {
-			if (AnnoUtils.arrayContains(lListTypeArgs, params.get(i).asType()
+		// Determine the correct Java type of the parameter to be fed into this
+		// printing method
+		for (int tempParamCount = 0; tempParamCount < params.size(); ++tempParamCount) {
+			if (AnnoUtils.arrayContains(lListTypeArgs, params.get(tempParamCount).asType()
 					.toString()) != -1) {
-				res += "java.util.List<String> p" + i;
-			} else if (AnnoUtils.arrayContains(lTypeArgs, params.get(i)
+				res += "java.util.List<String> p" + tempParamCount;
+			} else if (AnnoUtils.arrayContains(lTypeArgs, params.get(tempParamCount)
 					.asType().toString()) != -1) {
-				res += "String p" + i;
+				res += "String p" + tempParamCount;
 			} else {
-				// Have to add space between parameters otherwise they'll all be crammed together.
-				res += params.get(i).asType().toString() + " p" + i;
+				// Have to add space between parameters otherwise they'll all be
+				// crammed together.
+				res += params.get(tempParamCount).asType().toString() + " p" + tempParamCount;
 			}
-			if (i < params.size() - 1)
+			if (tempParamCount < params.size() - 1)
 				res += ", ";
 		}
 		res += ") {\n";
 		res += TAB2 + "return ";
 
-		// We already defined an annotation in our framework called "Syntax" for each language. We're just extracting that information.
+		// We already defined an annotation in our framework called "Syntax" for
+		// each language. We're just extracting that information.
 		String syn = e.getAnnotation(Syntax.class).value();
 		String[] synList = syn.split(" ");
 
-		// i is used to record which parameter we're currently trying to print. (ird)
-		// The "synList" is to say we separate different symbols in the one line of notation. j is to record which one among the list we're currently printing.
-		
-		// It seems that we start from j = 2 bceause the first two things are `form =`, mandatory components of the annotation.
-		int i = 0, j = 2;
-		while (j < synList.length) {
+		// This i is used to record which parameter we're currently trying to
+		// print. (ird)
+		// The "synList" is to say we separate different symbols in the one line
+		// of notation. synListCount is to record which one among the list we're currently
+		// printing.
+
+		// It seems that we start from synListCount = 2 bceause the first two things are
+		// `form =`, mandatory components of the annotation.
+		int paramCount = 0, synListCount = 2;
+		while (synListCount < synList.length) {
 			// If the symbol starts with ' then this symbols is a keyword.
-			while (j < synList.length && synList[j].startsWith("\'")) {
-				// substring(1, length() - 1) is to get rid of the ' ' at both ends.
-				String currentSyn = synList[j].substring(1, synList[j].length() - 1);
-				// The \" is because we want to print keywords literally in the final printed text.
+			while (synListCount < synList.length && synList[synListCount].startsWith("\'")) {
+				// substring(1, length() - 1) is to get rid of the ' ' at both
+				// ends.
+				String currentSyn = synList[synListCount].substring(1,
+						synList[synListCount].length() - 1);
+				// The \" is because we want to print keywords literally in the
+				// final printed text.
 				res += "\"" + currentSyn;
-				// Note a space is added after the keyword, if j is not a starting parentheses or the last symbol.
-				if (currentSyn.contains("(") || j > synList.length - 2) {
+				// Note a space is added after the keyword, if synListCount is not a
+				// starting parentheses or the last symbol.
+				if (currentSyn.contains("(") || synListCount > synList.length - 2) {
 					res += "\"";
 				} else {
-					
+
 					res += " \"";
 				}
-				j++;
-				if (j < synList.length)
+				synListCount++;
+				if (synListCount < synList.length)
 					// Just the string concatenator
 					res += " + ";
 			}
-			// It seems that the additional check is because j could also be incremented inside of the while loop itself. (j++)
-			if (j < synList.length) {
-				String paramName = "p" + i;
-				String str = synList[j];
-				// So "@" indicates the place where separators are to appear following it.
+			// It seems that the additional check is because synListCount could also be
+			// incremented inside of the while loop itself. (synListCount++)
+			if (synListCount < synList.length) {
+				String paramName = "p" + paramCount;
+				String str = synList[synListCount];
+				// So "@" indicates the place where separators are to appear
+				// following it.
 				if (str.contains("@")) {
-					String separator = getSeparator(synList[j]);
-					if (AnnoUtils.arrayContains(lListTypeArgs, params.get(i)
+					String separator = getSeparator(synList[synListCount]);
+					// Here the arrayOutOfBounds error is thrown for function
+					// invocation of Mumbler.
+					if (AnnoUtils.arrayContains(lListTypeArgs, params.get(paramCount)
 							.asType().toString()) != -1) {
-						// In this case the argument itself is a list. Thus we use String.join to join various arguments together.
-						// Note a space is added after each separator and before the next param in the list.
+						// In this case the argument itself is a list. Thus we
+						// use String.join to join various arguments together.
+						// Note a space is added after each separator and before
+						// the next param in the list.
 						res += "String.join(\"" + separator + " \", "
 								+ paramName + ")";
 					} else {
 						// TODO: error: list type does not match!
+						// res += "Error here. List type mismatch occurence 1.";
 					}
 				}
 
-				if (AnnoUtils.arrayContains(lListTypeArgs, params.get(i)
+				if (AnnoUtils.arrayContains(lListTypeArgs, params.get(paramCount)
 						.asType().toString()) != -1) {
 					// TODO: error: list type does not match!
-				} else if (AnnoUtils.arrayContains(lTypeArgs, params.get(i)
+					// res += "Error here. List type mismatch occurence 2.";
+				} else if (AnnoUtils.arrayContains(lTypeArgs, params.get(paramCount)
 						.asType().toString()) != -1) {
 					// In this case it's just one single argument, not a list.
 					res += paramName;
-					// Have to add space between parameters otherwise they'll all be crammed together.
-					// We add a space unless the param is the last one or is followed by )
-					if (!(j == synList.length - 1) && !(synList[j+1].contains(")"))) {
+					// Have to add space between parameters otherwise they'll
+					// all be crammed together.
+					// We add a space unless the param is the last one or is
+					// followed by )
+					if (!(synListCount == synList.length - 1)
+							&& !(synList[synListCount + 1].contains(")"))) {
 						// The concatenation operator in Java.
 						res += " + ";
 						// This is a literal space.
 						res += " \" \" ";
 					}
 				} else { // int, bool, float....
-					// In this case it's a primitive type. We should just directly print its literal representation.
-					// The \"\" here is just a hack to force the param to be displayed as String without having to call `toString`...
+					// In this case it's a primitive type. We should just
+					// directly print its literal representation.
+					// The \"\" here is just a hack to force the param to be
+					// displayed as String without having to call `toString`...
 					res += "\"\" + " + paramName;
-					
-					// We add a space unless the literal is the last one or is followed by )
-					if (!(j == synList.length - 1) && !(synList[j+1].contains(")"))) {
+
+					// We add a space unless the literal is the last one or is
+					// followed by )
+					if (!(synListCount == synList.length - 1)
+							&& !(synList[synListCount + 1].contains(")"))) {
 						// The concatenation operator in Java.
 						res += " + ";
 						// This is a literal space.
 						res += " \" \" ";
 					}
 				}
-				i++;
-				j++;
-				if (j < synList.length)
-					// This means we should still have other symbols in the syntax definition. Conncet them with a +
+        // Preventative for arrayOutOfBounds error.
+				if (paramCount < params.size() - 1) {
+					paramCount++;
+				}
+				synListCount++;
+				if (synListCount < synList.length)
+					// This means we should still have other symbols in the
+					// syntax definition. Conncet them with a +
 					res += " + ";
 			}
 		}
@@ -230,6 +262,8 @@ public class PPProcessor extends AbstractProcessor {
 		/* print debugging info. */
 		res += "/* \n";
 		res += "params.size(): " + params.size() + "\n";
+		res += "Original syn: " + syn + "\n";
+		res += "Original synList: " + Arrays.toString(synList) + "\n";
 		res += "synList.length: " + synList.length + "\n";
 		res += "e.getParameters(): " + e.getParameters() + "\n";
 		for (VariableElement param : params) {
