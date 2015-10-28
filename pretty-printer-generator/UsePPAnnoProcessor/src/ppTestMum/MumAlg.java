@@ -53,8 +53,8 @@ public interface MumAlg<P, E> {
 	P start(List<E> es);
 
 	// TODO: function invocation
-	// @Syntax("form = '(' SYMBOL  form@''*  ')' ")
-	// @Level(10)
-	// E invokeNode(String func, List<E> args);
+	 @Syntax("form = '(' SYMBOL form@''* ')' ")
+	 @Level(10)
+	 E invokeNode(String func, List<E> args);
 
 }
