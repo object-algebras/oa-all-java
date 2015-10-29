@@ -39,6 +39,9 @@ public class Main {
 		ArrayList<E> argsList = new ArrayList<E>();
 		argsList.add(alg.mumblerSymbol("x"));
 
+		/** Yanlin: This is 'wrong', if what you want to get is a square function. 
+		 Every element in a bodyList alone is a valid expression.
+		 bodyList.add(alg.invokeNode("+", ...)) */
 		ArrayList<E> bodyList = new ArrayList<E>();
 		bodyList.add(alg.mumblerSymbol("*"));
 		bodyList.add(alg.mumblerSymbol("x"));

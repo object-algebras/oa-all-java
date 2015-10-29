@@ -1,8 +1,0 @@
-/bin
-*.tokens
-*.class
-*/bin/
-*/*/.settings/
-*/Ignored/*
-
-.gitignore

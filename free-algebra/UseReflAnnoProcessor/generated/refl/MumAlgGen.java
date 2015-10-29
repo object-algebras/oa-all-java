@@ -2,6 +2,7 @@ package refl;
 
 import test.MumAlg;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 public final class MumAlgGen implements MumAlg<MumAlgGen.TypeE ,MumAlgGen.TypeP> {
 	public interface TypeE {
