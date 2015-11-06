@@ -283,7 +283,12 @@ public class PPProcessor extends AbstractProcessor {
 	private String getSeparator(String str) {
 		// getSeparator( "exp@','+" ) ---> ","
 		int i = str.indexOf("@");
-		return str.substring(i + 2, i + 3);
+		// Note that if the thing is of form '', then it uses space as separator by default and we shouldn't add anything extra.
+		if (str.substring(i+1, i+3).equals("''")) {
+			return "";
+		} else {
+			return str.substring(i+2, i+3);
+		}
 	}
 
 	@Override
