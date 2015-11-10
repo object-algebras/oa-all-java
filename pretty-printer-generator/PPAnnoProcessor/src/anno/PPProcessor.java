@@ -13,6 +13,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+//import noa.PGen;
+
 @SupportedAnnotationTypes(value = { "anno.PP" })
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class PPProcessor extends AbstractProcessor {
@@ -32,11 +34,13 @@ public class PPProcessor extends AbstractProcessor {
 		return message.split(",");
 	}
 
+
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations,
 			RoundEnvironment env) {
 
 		String folder = "ppgen";
+		
 		// Collect all the interfaces with PP
 		for (Element element : env.getElementsAnnotatedWith(PP.class)) {
 			// Initialization.
@@ -82,6 +86,8 @@ public class PPProcessor extends AbstractProcessor {
 		s += ">";
 		return s;
 	}
+	
+//	Let's see if this approach works. I think it definitely makes a ton of sense actually. The only problem is when to "pre" things and when to "print" things. If everything is "pre()" then the point is also a kind of lost. Let's see then.
 
 	private String createPPClass(String folder, TypeElement te,
 			String[] lTypeArgs, String typeArgs) {
@@ -95,9 +101,16 @@ public class PPProcessor extends AbstractProcessor {
 		int numOfTypeParams = getNumOfTypeParams(te);
 		String res = "package " + folder + ";\n\n";
 		res += "import " + getPackage(te) + "." + name + ";\n\n";
+		res += "import " + "de.uka.ilkd.pp.*;\n";
+		res += "import " + "java.io.*;\n";
 		res += "public class " + nameGenPP(name) + " implements " + name
 				+ produceClassHeader(numOfTypeParams) + " {\n";
 
+		// Here we'll set some class-level variables.
+		// Let's put it as 20 now for testing purpose.
+		res += TAB + "public static final int DEFAULT_LINE_WIDTH = 20;\n";
+		res += TAB + "public static final int DEFAULT_INDENTATION = 2;\n\n";
+		
 		// For each data type that we know to exist in the target language,
 		// we'll generate the appropriate printing method. The actual generation
 		// is done in the method "genPrintMethod"
@@ -123,7 +136,6 @@ public class PPProcessor extends AbstractProcessor {
 		}
 
 		String res = "";
-		// String is to say the thing we print shall of course be a string.
 		res += TAB + "public String " + e.getSimpleName() + "(";
 		List<? extends VariableElement> params = e.getParameters();
 		// Determine the correct Java type of the parameter to be fed into this
@@ -144,7 +156,16 @@ public class PPProcessor extends AbstractProcessor {
 				res += ", ";
 		}
 		res += ") {\n";
-		res += TAB2 + "return ";
+		// This was the beginning of returning a string. Now we'll change it a bit.
+		// Currently for each expression we're creating a local layout object to ensure the format.
+		res += TAB2 + "Layouter<NoExceptions> pp;\n";
+		res += TAB2 + "StringBackend back = new StringBackend(DEFAULT_LINE_WIDTH);\n";
+		res += TAB2 + "pp = new Layouter<NoExceptions>(back, DEFAULT_INDENTATION);\n";
+		res += TAB2 + "pp.beginC();\n\n";
+		
+//		res += "pp.";
+		
+//		res += TAB2 + "return ";
 
 		// We already defined an annotation in our framework called "Syntax" for
 		// each language. We're just extracting that information.
@@ -169,19 +190,17 @@ public class PPProcessor extends AbstractProcessor {
 						synList[synListCount].length() - 1);
 				// The \" is because we want to print keywords literally in the
 				// final printed text.
-				res += "\"" + currentSyn;
+				res += TAB2 + "pp.print(\"" + currentSyn + "\");\n";
+//				res += "\"" + currentSyn;
 				// Note a space is added after the keyword, if synListCount is not a
 				// starting parentheses or the last symbol.
-				if (currentSyn.contains("(") || synListCount > synList.length - 2) {
-					res += "\"";
-				} else {
-
-					res += " \"";
-				}
+				if (!(currentSyn.contains("(") || synListCount > synList.length - 2)) {
+					res += TAB2 + "pp.brk();\n";
+				} 	
 				synListCount++;
-				if (synListCount < synList.length)
-					// Just the string concatenator
-					res += " + ";
+//				if (synListCount < synList.length)
+//					// Just the string concatenator
+//					res += " + ";
 			}
 			// It seems that the additional check is because synListCount could also be
 			// incremented inside of the while loop itself. (synListCount++)
@@ -200,8 +219,9 @@ public class PPProcessor extends AbstractProcessor {
 						// use String.join to join various arguments together.
 						// Note a space is added after each separator and before
 						// the next param in the list.
-						res += "String.join(\"" + separator + " \", "
+						String temp = "String.join(\"" + separator + " \", "
 								+ paramName + ")";
+						res += TAB2 + "pp.print(" + temp + ")\n;";
 					} else {
 						// TODO: error: list type does not match!
 						// res += "Error here. List type mismatch occurence 1.";
@@ -215,33 +235,37 @@ public class PPProcessor extends AbstractProcessor {
 				} else if (AnnoUtils.arrayContains(lTypeArgs, params.get(paramCount)
 						.asType().toString()) != -1) {
 					// In this case it's just one single argument, not a list.
-					res += paramName;
+//					res += paramName;
+					res += TAB2 + "pp.print(" + paramName + ");\n";
 					// Have to add space between parameters otherwise they'll
 					// all be crammed together.
 					// We add a space unless the param is the last one or is
 					// followed by )
 					if (!(synListCount == synList.length - 1)
 							&& !(synList[synListCount + 1].contains(")"))) {
-						// The concatenation operator in Java.
-						res += " + ";
-						// This is a literal space.
-						res += " \" \" ";
+//						// The concatenation operator in Java.
+//						res += " + ";
+//						// This is a literal space.
+//						res += " \" \" ";
+						res += TAB2 + "pp.brk();\n";
 					}
 				} else { // int, bool, float....
 					// In this case it's a primitive type. We should just
 					// directly print its literal representation.
 					// The \"\" here is just a hack to force the param to be
 					// displayed as String without having to call `toString`...
-					res += "\"\" + " + paramName;
+					String temp = "\"\" + " + paramName;
+					res += TAB2 + "pp.print(" + temp + ");\n";
 
 					// We add a space unless the literal is the last one or is
 					// followed by )
 					if (!(synListCount == synList.length - 1)
 							&& !(synList[synListCount + 1].contains(")"))) {
-						// The concatenation operator in Java.
-						res += " + ";
-						// This is a literal space.
-						res += " \" \" ";
+//						// The concatenation operator in Java.
+//						res += " + ";
+//						// This is a literal space.
+//						res += " \" \" ";
+						res += "pp.brk();\n";
 					}
 				}
         // Preventative for arrayOutOfBounds error.
@@ -249,14 +273,18 @@ public class PPProcessor extends AbstractProcessor {
 					paramCount++;
 				}
 				synListCount++;
-				if (synListCount < synList.length)
+				if (synListCount < synList.length) {
 					// This means we should still have other symbols in the
 					// syntax definition. Conncet them with a +
-					res += " + ";
+//					res += " + ";
+				}
 			}
 		}
 
-		res += ";\n";
+//		res += ";\n";
+		res += "\n";
+		res += TAB2 + "pp.end();\n";
+		res += TAB2 + "return " + "back.getString();\n";
 		res += TAB + "}\n";
 
 		/* print debugging info. */

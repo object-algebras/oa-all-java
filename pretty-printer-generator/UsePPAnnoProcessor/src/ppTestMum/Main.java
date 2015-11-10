@@ -39,13 +39,14 @@ public class Main {
 		ArrayList<E> argsList = new ArrayList<E>();
 		argsList.add(alg.mumblerSymbol("x"));
 
-		/** Yanlin: This is 'wrong', if what you want to get is a square function. 
-		 Every element in a bodyList alone is a valid expression.
-		 bodyList.add(alg.invokeNode("+", ...)) */
 		ArrayList<E> bodyList = new ArrayList<E>();
-		bodyList.add(alg.mumblerSymbol("*"));
-		bodyList.add(alg.mumblerSymbol("x"));
-		bodyList.add(alg.stringNode("x"));
+		
+		ArrayList<E> list2 = new ArrayList<E>();
+		
+		list2.add(alg.mumblerSymbol("x"));
+		list2.add(alg.mumblerSymbol("x"));
+		
+		bodyList.add(alg.invokeNode("*", list2));
 
 		return alg.lambdaNode(argsList, bodyList);
 	}
@@ -63,8 +64,45 @@ public class Main {
 	
 	static <P, E> P makeStart (MumAlg<P, E> alg) {
 		ArrayList<E> list = new ArrayList<E>();
-		list.add(alg.mumblerSymbol("a"));
+		
+		list.add(alg.stringNode("A string"));
+		
+		list.add(alg.booleanNode(false));
+		list.add(alg.longNode(123));
+		list.add(alg.ifNode(alg.booleanNode(true), alg.stringNode("It's true"), alg.stringNode("It's false")));
+		list.add(alg.defineNode("a", alg.stringNode("This variable refers to a string.")));
+		
+		// listNode
+		ArrayList<E> list2 = new ArrayList<E>();
+		list2.add(alg.stringNode("x"));
+		list2.add(alg.longNode(6));
+		
+		list.add(alg.listNode(list2));
+
+		// lambdaNode
+		ArrayList<E> argsList = new ArrayList<E>();
+		argsList.add(alg.mumblerSymbol("x"));
+
+		ArrayList<E> bodyList = new ArrayList<E>();
+		
+		ArrayList<E> list3 = new ArrayList<E>();
+		
+		list3.add(alg.mumblerSymbol("x"));
+		list3.add(alg.mumblerSymbol("x"));
+		
+		bodyList.add(alg.invokeNode("*", list3));
+
+		list.add(alg.lambdaNode(argsList, bodyList));
+		
+		// symbolNode
 		list.add(alg.mumblerSymbol("x"));
+		
+		// invokeNode
+		ArrayList<E> argsListInvoke = new ArrayList<E>();
+		argsListInvoke.add(alg.mumblerSymbol("y"));
+		argsListInvoke.add(alg.longNode(6));
+		list.add(alg.invokeNode("funcX", argsListInvoke));
+		
 		return alg.start(list);
 	}
 
@@ -96,7 +134,15 @@ public class Main {
 		String invokeTest = makeInvoke(new PPMumAlg());
 		System.out.println(invokeTest);
 		
-		String invokeStart = makeStart(new PPMumAlg());
-		System.out.println(invokeStart);
+		String startTest = makeStart(new PPMumAlg());
+		System.out.println(startTest);
+		
+//		Layouter<IOException> startTest = makeStart(new PPMumAlg());
+//		try {
+//			startTest.flush();
+////			startTest.close();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 	}
 }
