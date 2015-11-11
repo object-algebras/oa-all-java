@@ -35,19 +35,24 @@ public class PGen {
 		this.tokensClass = tokens;
 		this.signature = signature;
 	}
-
-	public void generate(String name, String pkg, String path) {
-        generate(name, pkg, path, true, null);
+    public void generate(String name, String pkg, String path) {
+        generate(name, pkg, path, true, null, false);
+    }
+	public void generate(String name, String pkg, String path, boolean isPy) {
+        generate(name, pkg, path, true, null, isPy);
 	}
 
-	public void generate(String name, String pkg, String path, boolean log, String logFile) {
+    public void generate(String name, String pkg, String path, boolean log, String logFile) {
+        generate(name, pkg, path, true, null, false);
+    }
+	public void generate(String name, String pkg, String path, boolean log, String logFile, boolean isPy) {
 	    this.pGenName = name;
 		Rules rules = new Rules(name, pkg, tokensClass, signature);
 		addProductions(rules);
 
 		StringBuilder sb = new StringBuilder();
 		rules.groupByLevel();
-		rules.generate(sb);
+		rules.generate(sb, isPy);
 		generateTokens(sb);
 
 		String antlrContent = sb.toString();
