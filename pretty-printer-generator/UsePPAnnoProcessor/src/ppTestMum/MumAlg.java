@@ -4,7 +4,7 @@ import java.util.List;
 
 import anno.*;
 
-@PP
+@PP(MumTokens.class)
 public interface MumAlg<P, E> {
 	// // node
 	// E lexicalReadNode(MaterializedFrame scope, FrameSlot slot);

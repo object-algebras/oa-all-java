@@ -4,7 +4,7 @@ import java.util.List;
 
 import anno.*;
 
-@PP
+@PP(Tokens.class)
 public interface ExpAlg<E> {
     @Syntax("exp = exp '*' exp")
     @Level(20)
