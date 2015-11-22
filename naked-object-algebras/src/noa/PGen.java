@@ -43,10 +43,10 @@ public class PGen {
 	}
 
     public void generate(String name, String pkg, String path, boolean log, String logFile) {
-        generate(name, pkg, path, true, null, false);
+        generate(name, pkg, path, log, logFile, false);
     }
 	public void generate(String name, String pkg, String path, boolean log, String logFile, boolean isPy) {
-	    this.pGenName = name;
+	    PGen.pGenName = name;
 		Rules rules = new Rules(name, pkg, tokensClass, signature);
 		addProductions(rules);
 
