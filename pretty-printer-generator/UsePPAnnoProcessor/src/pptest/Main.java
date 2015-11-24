@@ -3,6 +3,7 @@ package pptest;
 import java.util.*;
 
 import ppgen.PPExpAlg;
+import ppgen.IPrint;
 import anno.*;
 
 /*
@@ -37,12 +38,15 @@ public class Main {
     }
 
     public static void main(String[] args) {
-	String e1pp = make(new PPExpAlg());
-	System.out.println(e1pp);
-
-	String e2pp = make2(new PPExpAlg());
-	System.out.println(e2pp);
-
+    PPExpAlg p1 = new PPExpAlg();
+    IPrint pp1 = make(p1);
+    pp1.print();
+    System.out.println(p1.back.getString());
+    
+    PPExpAlg p2 = new PPExpAlg();
+    IPrint pp2 = make2(p2);
+    pp2.print();
+    System.out.println(p2.back.getString());
 	/******
 	 * List<String> list = Arrays.asList("5", "6", "7", "8"); String joined
 	 * = String.join("+", list); System.out.println(list);

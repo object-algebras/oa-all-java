@@ -3,6 +3,7 @@ package ppTestMum;
 import java.util.*;
 
 import ppgen.PPMumAlg;
+import ppgen.IPrint;
 import anno.*;
 
 public class Main {
@@ -107,36 +108,56 @@ public class Main {
 	}
 
 	public static void main(String[] args) {
-		String boolTest = makeBool(new PPMumAlg());
-		System.out.println(boolTest);
+      PPMumAlg boolTestAlg = new PPMumAlg();
+      IPrint boolTest = makeBool(boolTestAlg);
+      boolTest.print();
+      System.out.println(boolTestAlg.back.getString());
 
-		String longTest = makeLong(new PPMumAlg());
-		System.out.println(longTest);
+      PPMumAlg longTestAlg = new PPMumAlg();
+      IPrint longTest = makeLong (longTestAlg);
+      longTest.print();
+      System.out.println(longTestAlg.back.getString());
 
-		String ifTest = makeIf(new PPMumAlg());
-		System.out.println(ifTest);
+      PPMumAlg ifTestAlg = new PPMumAlg();
+      IPrint ifTest = makeIf(ifTestAlg);
+      ifTest.print();
+      System.out.println(ifTestAlg.back.getString());
 
-		String defineTest = makeDefine(new PPMumAlg());
-		System.out.println(defineTest);
+      PPMumAlg defineTestAlg = new PPMumAlg();
+      IPrint defineTest = makeDefine(defineTestAlg);
+      defineTest.print();
+      System.out.println(defineTestAlg.back.getString());
 
-		String quoteTest = makeQuote(new PPMumAlg());
-		System.out.println(quoteTest);
+      PPMumAlg quoteTestAlg = new PPMumAlg();
+      IPrint quoteTest = makeQuote(quoteTestAlg);
+      quoteTest.print();
+      System.out.println(quoteTestAlg.back.getString());
 
-		String listTest = makeList(new PPMumAlg());
-		System.out.println(listTest);
+      PPMumAlg listTestAlg = new PPMumAlg();
+      IPrint listTest = makeList(listTestAlg);
+      listTest.print();
+      System.out.println(listTestAlg.back.getString());
 
-		String lambdaTest = makeLambda(new PPMumAlg());
-		System.out.println(lambdaTest);
+      PPMumAlg lambdaTestAlg = new PPMumAlg();
+      IPrint lambdaTest = makeLambda(lambdaTestAlg);
+      lambdaTest.print();
+      System.out.println(lambdaTestAlg.back.getString());
 
-		String symbolTest = makeSymbol(new PPMumAlg());
-		System.out.println(symbolTest);
-		
-		String invokeTest = makeInvoke(new PPMumAlg());
-		System.out.println(invokeTest);
-		
-		String startTest = makeStart(new PPMumAlg());
-		System.out.println(startTest);
-		
+      PPMumAlg symbolTestAlg = new PPMumAlg();
+      IPrint symbolTest = makeSymbol(symbolTestAlg);
+      symbolTest.print();
+      System.out.println(symbolTestAlg.back.getString());
+
+      PPMumAlg invokeTestAlg = new PPMumAlg();
+      IPrint invokeTest = makeInvoke(invokeTestAlg);
+      invokeTest.print();
+      System.out.println(invokeTestAlg.back.getString());
+
+      PPMumAlg startTestAlg = new PPMumAlg();
+      IPrint startTest = makeStart(startTestAlg);
+      startTest.print();
+      System.out.println(startTestAlg.back.getString());
+
 //		Layouter<IOException> startTest = makeStart(new PPMumAlg());
 //		try {
 //			startTest.flush();
