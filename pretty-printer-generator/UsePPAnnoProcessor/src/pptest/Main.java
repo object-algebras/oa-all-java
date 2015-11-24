@@ -24,8 +24,7 @@ import anno.*;
 
 public class Main {
     static <E> E make(ExpAlg<E> alg) {
-	// return alg.add(alg.lit(3), alg.lit(4));
-	return alg.add(alg.lit(3), alg.mul(alg.lit(4), alg.lit(5)));
+    	return alg.add(alg.lit(3), alg.mul(alg.lit(4), alg.lit(5)));
     }
 
     static <E> E make2(ExpAlg<E> alg) {

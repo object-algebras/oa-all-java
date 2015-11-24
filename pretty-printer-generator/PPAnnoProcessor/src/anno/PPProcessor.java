@@ -161,7 +161,7 @@ public class PPProcessor extends AbstractProcessor {
 		res += TAB2 + "Layouter<NoExceptions> pp;\n";
 		res += TAB2 + "StringBackend back = new StringBackend(DEFAULT_LINE_WIDTH);\n";
 		res += TAB2 + "pp = new Layouter<NoExceptions>(back, DEFAULT_INDENTATION);\n";
-		res += TAB2 + "pp.beginC();\n\n";
+		res += TAB2 + "pp.beginI();\n\n";
 		
 //		res += "pp.";
 		

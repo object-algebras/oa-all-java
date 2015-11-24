@@ -49,7 +49,6 @@ public interface MumAlg<P, E> {
 	@Syntax("form = STRING")
 	E stringNode(String x);
 
-	/** Yanlin: why generate a quote ' in PPMumAlg.start(), it's not in the annotation. */
 	@Syntax("file = form@''+ ")
 	P start(List<E> es);
 
