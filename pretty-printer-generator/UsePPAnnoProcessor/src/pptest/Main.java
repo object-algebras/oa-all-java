@@ -41,12 +41,12 @@ public class Main {
     PPExpAlg p1 = new PPExpAlg();
     IPrint pp1 = make(p1);
     pp1.print();
-    System.out.println(p1.back.getString());
+    System.out.println(p1.back().getString());
     
     PPExpAlg p2 = new PPExpAlg();
     IPrint pp2 = make2(p2);
     pp2.print();
-    System.out.println(p2.back.getString());
+    System.out.println(p2.back().getString());
 	/******
 	 * List<String> list = Arrays.asList("5", "6", "7", "8"); String joined
 	 * = String.join("+", list); System.out.println(list);
