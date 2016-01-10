@@ -43,8 +43,9 @@ public class PPProcessor extends AbstractProcessor {
 
 		// Add the factory interface PP here.
 		printerRes += "package ppgen;\n";
+		printerRes += "import de.uka.ilkd.pp.*;\n";
 		printerRes += "public interface IPrint {\n";
-		printerRes += TAB + "void print();\n";
+		printerRes += TAB + "Layouter<NoExceptions> print();\n";
 		printerRes += "}\n";
 
 		try {
@@ -292,6 +293,7 @@ public class PPProcessor extends AbstractProcessor {
 
 		res += "\n";
 		res += TAB3 + "pp().end();\n";
+		res += TAB3 + "return pp();\n";
 		res += TAB2 + "};\n";
 		res += TAB + "}\n";
 
@@ -400,6 +402,7 @@ public class PPProcessor extends AbstractProcessor {
 						res += TAB3 + "pp().brk();\n";
 					}
 					res += TAB3 + "pp().end();\n";
+					res += TAB3 + "return pp();\n";
 					res += TAB2 + "};\n";
 					res += TAB + "}\n";
 
