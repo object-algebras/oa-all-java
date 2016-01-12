@@ -41,12 +41,21 @@ public class PPProcessor extends AbstractProcessor {
 
 		String printerRes = "";
 
-		// Add the factory interface PP here.
+		// Add the factory interface IPrint here.
 		printerRes += "package ppgen;\n";
 		printerRes += "import de.uka.ilkd.pp.*;\n";
 		printerRes += "public interface IPrint {\n";
-		printerRes += TAB + "Layouter<NoExceptions> print();\n";
-		printerRes += "}\n";
+		// Let's put it as 20 now for testing purpose.
+		printerRes += TAB + "static final int DEFAULT_LINE_WIDTH = 20;\n";
+		printerRes += TAB + "static final int DEFAULT_INDENTATION = 2;\n\n";
+		printerRes += TAB + "default StringBackend print() {\n";
+		printerRes += TAB2 + "StringBackend back = new StringBackend(DEFAULT_LINE_WIDTH);";
+		printerRes += TAB2 + "Layouter<NoExceptions> pp = new Layouter<NoExceptions>(back, DEFAULT_INDENTATION);\n";
+		printerRes += TAB2 + "printLocal(pp);\n";
+		printerRes += TAB2 + "return back;\n";
+		printerRes += TAB + "}\n\n";
+		printerRes += TAB + "void printLocal(Layouter<NoExceptions> pp);\n";
+		printerRes += "}";
 
 		try {
 			// Also create the public interface Printer.
@@ -114,14 +123,6 @@ public class PPProcessor extends AbstractProcessor {
 		res += "interface " + nameGenInterface(name) + " extends " + name + produceClassHeader(numOfTypeParams)
 				+ " {\n";
 
-		// Here we'll set some class-level variables.
-		// Let's put it as 20 now for testing purpose.
-		res += TAB + "public static final int DEFAULT_LINE_WIDTH = 20;\n";
-		res += TAB + "public static final int DEFAULT_INDENTATION = 2;\n\n";
-
-		res += TAB + "abstract StringBackend back();\n";
-		res += TAB + "abstract Layouter<NoExceptions> pp();\n";
-
 		// For each data type that we know to exist in the target language,
 		// we'll generate the appropriate printing method in an interface. The
 		// actual generation
@@ -137,18 +138,18 @@ public class PPProcessor extends AbstractProcessor {
 		res += "}\n\n";
 
 		res += "public class " + nameGenPP(name) + " implements " + nameGenInterface(name) + " {\n";
-		res += TAB + "StringBackend back = new StringBackend(DEFAULT_LINE_WIDTH);\n";
-		res += TAB + "Layouter<NoExceptions> pp = new Layouter<NoExceptions>(back, DEFAULT_INDENTATION);\n\n";
+//		res += TAB + "StringBackend back = new StringBackend(DEFAULT_LINE_WIDTH);\n";
+//		res += TAB + "Layouter<NoExceptions> pp = new Layouter<NoExceptions>(back, DEFAULT_INDENTATION);\n\n";
 
-		res += TAB + "@Override\n";
-		res += TAB + "public StringBackend back() {\n";
-		res += TAB2 + "return back;\n";
-		res += TAB + "}\n\n";
-
-		res += TAB + "@Override\n";
-		res += TAB + "public Layouter<NoExceptions> pp() {\n";
-		res += TAB2 + "return pp;\n";
-		res += TAB + "}\n\n";
+//		res += TAB + "@Override\n";
+//		res += TAB + "public StringBackend back() {\n";
+//		res += TAB2 + "return back;\n";
+//		res += TAB + "}\n\n";
+//
+//		res += TAB + "@Override\n";
+//		res += TAB + "public Layouter<NoExceptions> pp() {\n";
+//		res += TAB2 + "return pp;\n";
+//		res += TAB + "}\n\n";
 
 		// Here we generate the printing method for all things that need
 		// overriding.
@@ -193,8 +194,8 @@ public class PPProcessor extends AbstractProcessor {
 		}
 		res += ") {\n";
 		// This was the beginning of returning a string.
-		res += TAB2 + "return () -> {\n";
-		res += TAB3 + "pp().beginI();\n";
+		res += TAB2 + "return (Layouter<NoExceptions> pp) -> {\n";
+		res += TAB3 + "pp.beginI();\n";
 
 		// We already defined an annotation in our framework called "Syntax" for
 		// each language. We're just extracting that information.
@@ -212,12 +213,12 @@ public class PPProcessor extends AbstractProcessor {
 				// ends.
 				String currentSyn = synList[synListCount].substring(1, synList[synListCount].length() - 1);
 
-				res += TAB3 + "pp().print(" + "\"" + currentSyn + "\");\n";
+				res += TAB3 + "pp.print(" + "\"" + currentSyn + "\");\n";
 				// Note a space is added after the keyword, if synListCount is
 				// not a
 				// starting parentheses or the last symbol.
 				if (!(currentSyn.contains("(") || synListCount > synList.length - 2)) {
-					res += TAB3 + "pp().brk();\n";
+					res += TAB3 + "pp.brk();\n";
 				}
 				synListCount++;
 			}
@@ -237,13 +238,13 @@ public class PPProcessor extends AbstractProcessor {
 						// In this case the argument itself is a list of
 						// printers.
 						res += TAB3 + "for (int count = 0; count < " + paramName + ".size() - 1; count++) {\n";
-						res += TAB4 + paramName + ".get(count).print();\n";
-						res += TAB4 + "pp().print(\"" + separator + "\");\n";
-						res += TAB4 + "pp().brk();\n";
+						res += TAB4 + paramName + ".get(count).printLocal(pp);\n";
+						res += TAB4 + "pp.print(\"" + separator + "\");\n";
+						res += TAB4 + "pp.brk();\n";
 						res += TAB3 + "}\n";
 						// Print the last element of the list without printing
 						// extra breaks.
-						res += TAB3 + paramName + ".get(" + paramName + ".size() - 1).print();\n";
+						res += TAB3 + paramName + ".get(" + paramName + ".size() - 1).printLocal(pp);\n";
 					} else {
 						// TODO: error: list type does not match!
 						// res += "Error here. List type mismatch occurence 1.";
@@ -257,13 +258,13 @@ public class PPProcessor extends AbstractProcessor {
 				} else if (AnnoUtils.arrayContains(lTypeArgs, params.get(paramCount).asType().toString()) != -1) {
 					// In this case it's just one single printer argument, not a
 					// list.
-					res += TAB3 + paramName + ".print();\n";
+					res += TAB3 + paramName + ".printLocal(pp);\n";
 					// Have to add space between parameters otherwise they'll
 					// all be crammed together.
 					// We add a break unless the param is the last one or is
 					// followed by )
 					if (!(synListCount == synList.length - 1) && !(synList[synListCount + 1].contains(")"))) {
-						res += TAB3 + "pp().brk();\n";
+						res += TAB3 + "pp.brk();\n";
 					}
 				} else { // int, bool, float....
 					// In this case it's a primitive type. We should just
@@ -275,12 +276,12 @@ public class PPProcessor extends AbstractProcessor {
 					// manually implement things. The code is in the method
 					// "genClassMethod"
 					String temp = "\"\" + " + paramName;
-					res += TAB3 + "pp().print(" + temp + ");\n";
+					res += TAB3 + "pp.print(" + temp + ");\n";
 
 					// We add a space unless the literal is the last one or is
 					// followed by )
 					if (!(synListCount == synList.length - 1) && !(synList[synListCount + 1].contains(")"))) {
-						res += TAB3 + "pp().brk();\n";
+						res += TAB3 + "pp.brk();\n";
 					}
 				}
 				// Preventative for arrayOutOfBounds error.
@@ -292,8 +293,7 @@ public class PPProcessor extends AbstractProcessor {
 		}
 
 		res += "\n";
-		res += TAB3 + "pp().end();\n";
-		res += TAB3 + "return pp();\n";
+		res += TAB3 + "pp.end();\n";
 		res += TAB2 + "};\n";
 		res += TAB + "}\n";
 
@@ -391,18 +391,17 @@ public class PPProcessor extends AbstractProcessor {
 							res += ", ";
 					}
 					res += ") {\n";
-					res += TAB2 + "return () -> {\n";
-					res += TAB3 + "pp().beginI();\n";
+					res += TAB2 + "return (Layouter<NoExceptions> pp) -> {\n";
+					res += TAB3 + "pp.beginI();\n";
 					String temp = "\"\" + " + paramName;
-					res += TAB3 + "pp().print(" + temp + ");\n";
+					res += TAB3 + "pp.print(" + temp + ");\n";
 
 					// We add a space unless the literal is the last one or is
 					// followed by )
 					if (!(synListCount == synList.length - 1) && !(synList[synListCount + 1].contains(")"))) {
-						res += TAB3 + "pp().brk();\n";
+						res += TAB3 + "pp.brk();\n";
 					}
-					res += TAB3 + "pp().end();\n";
-					res += TAB3 + "return pp();\n";
+					res += TAB3 + "pp.end();\n";
 					res += TAB2 + "};\n";
 					res += TAB + "}\n";
 

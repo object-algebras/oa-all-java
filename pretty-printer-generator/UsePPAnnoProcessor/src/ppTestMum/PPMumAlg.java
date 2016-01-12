@@ -1,29 +1,22 @@
 package ppTestMum;
-
 import ppTestMum.MumAlg;
 
 import de.uka.ilkd.pp.*;
 interface _PPMumAlg extends MumAlg<IPrint, IPrint> {
-	public static final int DEFAULT_LINE_WIDTH = 20;
-	public static final int DEFAULT_INDENTATION = 2;
-
-	abstract StringBackend back();
-	abstract Layouter<NoExceptions> pp();
 	default IPrint ifNode(IPrint p0, IPrint p1, IPrint p2) {
-		return () -> {
-			pp().beginI();
-			pp().print("(");
-			pp().print("if");
-			pp().brk();
-			p0.print();
-			pp().brk();
-			p1.print();
-			pp().brk();
-			p2.print();
-			pp().print(")");
+		return (Layouter<NoExceptions> pp) -> {
+			pp.beginI();
+			pp.print("(");
+			pp.print("if");
+			pp.brk();
+			p0.printLocal(pp);
+			pp.brk();
+			p1.printLocal(pp);
+			pp.brk();
+			p2.printLocal(pp);
+			pp.print(")");
 
-			pp().end();
-			return pp();
+			pp.end();
 		};
 	}
 /* 
@@ -42,18 +35,17 @@ form = '(' 'if' form form form ')'
  */ 
 
 	default IPrint defineNode(java.lang.String p0, IPrint p1) {
-		return () -> {
-			pp().beginI();
-			pp().print("(");
-			pp().print("define");
-			pp().brk();
-			pp().print("" + p0);
-			pp().brk();
-			p1.print();
-			pp().print(")");
+		return (Layouter<NoExceptions> pp) -> {
+			pp.beginI();
+			pp.print("(");
+			pp.print("define");
+			pp.brk();
+			pp.print("" + p0);
+			pp.brk();
+			p1.printLocal(pp);
+			pp.print(")");
 
-			pp().end();
-			return pp();
+			pp.end();
 		};
 	}
 /* 
@@ -71,16 +63,15 @@ form = '(' 'define' SYMBOL form ')'
  */ 
 
 	default IPrint quoteNode(IPrint p0) {
-		return () -> {
-			pp().beginI();
-			pp().print("(");
-			pp().print("quote");
-			pp().brk();
-			p0.print();
-			pp().print(")");
+		return (Layouter<NoExceptions> pp) -> {
+			pp.beginI();
+			pp.print("(");
+			pp.print("quote");
+			pp.brk();
+			p0.printLocal(pp);
+			pp.print(")");
 
-			pp().end();
-			return pp();
+			pp.end();
 		};
 	}
 /* 
@@ -97,30 +88,29 @@ form = '(' 'quote' form ')'
  */ 
 
 	default IPrint lambdaNode(java.util.List<IPrint> p0, java.util.List<IPrint> p1) {
-		return () -> {
-			pp().beginI();
-			pp().print("(");
-			pp().print("lambda");
-			pp().brk();
-			pp().print("(");
+		return (Layouter<NoExceptions> pp) -> {
+			pp.beginI();
+			pp.print("(");
+			pp.print("lambda");
+			pp.brk();
+			pp.print("(");
 			for (int count = 0; count < p0.size() - 1; count++) {
-				p0.get(count).print();
-				pp().print("");
-				pp().brk();
+				p0.get(count).printLocal(pp);
+				pp.print("");
+				pp.brk();
 			}
-			p0.get(p0.size() - 1).print();
-			pp().print(")");
-			pp().brk();
+			p0.get(p0.size() - 1).printLocal(pp);
+			pp.print(")");
+			pp.brk();
 			for (int count = 0; count < p1.size() - 1; count++) {
-				p1.get(count).print();
-				pp().print("");
-				pp().brk();
+				p1.get(count).printLocal(pp);
+				pp.print("");
+				pp.brk();
 			}
-			p1.get(p1.size() - 1).print();
-			pp().print(")");
+			p1.get(p1.size() - 1).printLocal(pp);
+			pp.print(")");
 
-			pp().end();
-			return pp();
+			pp.end();
 		};
 	}
 /* 
@@ -138,19 +128,18 @@ form = '(' 'lambda' '(' form@''* ')' form@''+ ')'
  */ 
 
 	default IPrint listNode(java.util.List<IPrint> p0) {
-		return () -> {
-			pp().beginI();
-			pp().print("(");
+		return (Layouter<NoExceptions> pp) -> {
+			pp.beginI();
+			pp.print("(");
 			for (int count = 0; count < p0.size() - 1; count++) {
-				p0.get(count).print();
-				pp().print("");
-				pp().brk();
+				p0.get(count).printLocal(pp);
+				pp.print("");
+				pp.brk();
 			}
-			p0.get(p0.size() - 1).print();
-			pp().print(")");
+			p0.get(p0.size() - 1).printLocal(pp);
+			pp.print(")");
 
-			pp().end();
-			return pp();
+			pp.end();
 		};
 	}
 /* 
@@ -167,12 +156,11 @@ form = '(' form@''+ ')'
  */ 
 
 	default IPrint booleanNode(boolean p0) {
-		return () -> {
-			pp().beginI();
-			pp().print("" + p0);
+		return (Layouter<NoExceptions> pp) -> {
+			pp.beginI();
+			pp.print("" + p0);
 
-			pp().end();
-			return pp();
+			pp.end();
 		};
 	}
 /* 
@@ -189,12 +177,11 @@ form = BOOL
  */ 
 
 	default IPrint longNode(java.lang.Object p0) {
-		return () -> {
-			pp().beginI();
-			pp().print("" + p0);
+		return (Layouter<NoExceptions> pp) -> {
+			pp.beginI();
+			pp.print("" + p0);
 
-			pp().end();
-			return pp();
+			pp.end();
 		};
 	}
 /* 
@@ -211,12 +198,11 @@ form = NUM
  */ 
 
 	default IPrint mumblerSymbol(java.lang.String p0) {
-		return () -> {
-			pp().beginI();
-			pp().print("" + p0);
+		return (Layouter<NoExceptions> pp) -> {
+			pp.beginI();
+			pp.print("" + p0);
 
-			pp().end();
-			return pp();
+			pp.end();
 		};
 	}
 /* 
@@ -233,12 +219,11 @@ form = SYMBOL
  */ 
 
 	default IPrint stringNode(java.lang.String p0) {
-		return () -> {
-			pp().beginI();
-			pp().print("" + p0);
+		return (Layouter<NoExceptions> pp) -> {
+			pp.beginI();
+			pp.print("" + p0);
 
-			pp().end();
-			return pp();
+			pp.end();
 		};
 	}
 /* 
@@ -255,17 +240,16 @@ form = STRING
  */ 
 
 	default IPrint start(java.util.List<IPrint> p0) {
-		return () -> {
-			pp().beginI();
+		return (Layouter<NoExceptions> pp) -> {
+			pp.beginI();
 			for (int count = 0; count < p0.size() - 1; count++) {
-				p0.get(count).print();
-				pp().print("");
-				pp().brk();
+				p0.get(count).printLocal(pp);
+				pp.print("");
+				pp.brk();
 			}
-			p0.get(p0.size() - 1).print();
+			p0.get(p0.size() - 1).printLocal(pp);
 
-			pp().end();
-			return pp();
+			pp.end();
 		};
 	}
 /* 
@@ -282,21 +266,20 @@ file = form@''+
  */ 
 
 	default IPrint invokeNode(java.lang.String p0, java.util.List<IPrint> p1) {
-		return () -> {
-			pp().beginI();
-			pp().print("(");
-			pp().print("" + p0);
-			pp().brk();
+		return (Layouter<NoExceptions> pp) -> {
+			pp.beginI();
+			pp.print("(");
+			pp.print("" + p0);
+			pp.brk();
 			for (int count = 0; count < p1.size() - 1; count++) {
-				p1.get(count).print();
-				pp().print("");
-				pp().brk();
+				p1.get(count).printLocal(pp);
+				pp.print("");
+				pp.brk();
 			}
-			p1.get(p1.size() - 1).print();
-			pp().print(")");
+			p1.get(p1.size() - 1).printLocal(pp);
+			pp.print(")");
 
-			pp().end();
-			return pp();
+			pp.end();
 		};
 	}
 /* 
@@ -316,53 +299,36 @@ form = '(' SYMBOL form@''* ')'
 }
 
 public class PPMumAlg implements _PPMumAlg {
-	StringBackend back = new StringBackend(DEFAULT_LINE_WIDTH);
-	Layouter<NoExceptions> pp = new Layouter<NoExceptions>(back, DEFAULT_INDENTATION);
-
-	@Override
-	public StringBackend back() {
-		return back;
-	}
-
-	@Override
-	public Layouter<NoExceptions> pp() {
-		return pp;
-	}
-
 	@Override
 	public IPrint booleanNode(boolean p0) {
-		return () -> {
-			pp().beginI();
-			pp().print("" + p0);
-			pp().end();
-			return pp();
+		return (Layouter<NoExceptions> pp) -> {
+			pp.beginI();
+			pp.print("" + p0);
+			pp.end();
 		};
 	}
 	@Override
 	public IPrint longNode(java.lang.Object p0) {
-		return () -> {
-			pp().beginI();
-			pp().print("" + p0);
-			pp().end();
-			return pp();
+		return (Layouter<NoExceptions> pp) -> {
+			pp.beginI();
+			pp.print("" + p0);
+			pp.end();
 		};
 	}
 	@Override
 	public IPrint mumblerSymbol(java.lang.String p0) {
-		return () -> {
-			pp().beginI();
-			pp().print("" + p0);
-			pp().end();
-			return pp();
+		return (Layouter<NoExceptions> pp) -> {
+			pp.beginI();
+			pp.print("" + p0);
+			pp.end();
 		};
 	}
 	@Override
 	public IPrint stringNode(java.lang.String p0) {
-		return () -> {
-			pp().beginI();
-			pp().print("" + p0);
-			pp().end();
-			return pp();
+		return (Layouter<NoExceptions> pp) -> {
+			pp.beginI();
+			pp.print("" + p0);
+			pp.end();
 		};
 	}
 }
