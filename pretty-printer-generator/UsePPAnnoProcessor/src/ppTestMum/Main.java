@@ -120,7 +120,8 @@ public class Main {
 		System.out.println(longString.getString());
 
 		IPrint ifTest = makeIf(alg);
-		StringBackend ifString = ifTest.print();
+		// Example: Manual specification of line width and indentation
+		StringBackend ifString = ifTest.print(10, 8);
 		System.out.println(ifString.getString());
 
 		IPrint defineTest = makeDefine(alg);

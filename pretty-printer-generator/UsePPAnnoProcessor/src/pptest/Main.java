@@ -23,22 +23,20 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        PPExpAlg p1 = new PPExpAlg();
-        IPrint pp1 = make(p1);
-        StringBackend s1 = pp1.print();
+        PPExpAlg alg = new PPExpAlg();
+        IPrint pp1 = make(alg);
+		// Example: Manual specification of line width and indentation
+        StringBackend s1 = pp1.print(20, 2);
         System.out.println(s1.getString());
 
-        PPExpAlg p2 = new PPExpAlg();
-        IPrint pp2 = make2(p2);
+        IPrint pp2 = make2(alg);
         StringBackend s2 = pp2.print();
         System.out.println(s2.getString());
 
         
-          // Wrong: expressions pp1 and pp2 cannot be reused.
-          PPExpAlg p3 = new PPExpAlg();
-          IPrint pp3 = p3.add(pp1, pp2);
-          StringBackend s3 = pp3.print();
-          System.out.println(s3.getString());
+        IPrint pp3 = alg.add(pp1, pp2);
+        StringBackend s3 = pp3.print();
+        System.out.println(s3.getString());
          
     }
 }

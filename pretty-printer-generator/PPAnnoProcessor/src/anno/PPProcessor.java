@@ -46,11 +46,18 @@ public class PPProcessor extends AbstractProcessor {
 		printerRes += "import de.uka.ilkd.pp.*;\n";
 		printerRes += "public interface IPrint {\n";
 		// Let's put it as 20 now for testing purpose.
-		printerRes += TAB + "static final int DEFAULT_LINE_WIDTH = 20;\n";
+		printerRes += TAB + "static final int DEFAULT_LINE_WIDTH = 80;\n";
 		printerRes += TAB + "static final int DEFAULT_INDENTATION = 2;\n\n";
 		printerRes += TAB + "default StringBackend print() {\n";
-		printerRes += TAB2 + "StringBackend back = new StringBackend(DEFAULT_LINE_WIDTH);";
+		printerRes += TAB2 + "StringBackend back = new StringBackend(DEFAULT_LINE_WIDTH);\n";
 		printerRes += TAB2 + "Layouter<NoExceptions> pp = new Layouter<NoExceptions>(back, DEFAULT_INDENTATION);\n";
+		printerRes += TAB2 + "printLocal(pp);\n";
+		printerRes += TAB2 + "return back;\n";
+		printerRes += TAB + "}\n\n";
+		// The method with manual parameters
+		printerRes += TAB + "default StringBackend print(int lineWidth, int indentation) {\n";
+		printerRes += TAB2 + "StringBackend back = new StringBackend(lineWidth);\n";
+		printerRes += TAB2 + "Layouter<NoExceptions> pp = new Layouter<NoExceptions>(back, indentation);\n";
 		printerRes += TAB2 + "printLocal(pp);\n";
 		printerRes += TAB2 + "return back;\n";
 		printerRes += TAB + "}\n\n";
