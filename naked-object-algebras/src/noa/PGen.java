@@ -77,6 +77,16 @@ public class PGen {
 		theG.fileName = path;
 		t.process(theG, true);
 	}
+	public static void generateFromGrammarString(String antlrContent, String pkg, String path, boolean isPy) {
+        Tool t = new org.antlr.v4.Tool();
+        GrammarRootAST g = t.parseGrammarFromString(antlrContent);
+        Grammar theG = t.createGrammar(g);
+        t.gen_listener = false;
+        t.gen_visitor = false;
+        t.gen_dependencies = false;
+        theG.fileName = path;
+        t.process(theG, true);
+	}
 
     public void generateFromGrammarFile(String name, String pkg, String path, String grammarPath) {
         PGen.pGenName = name;
