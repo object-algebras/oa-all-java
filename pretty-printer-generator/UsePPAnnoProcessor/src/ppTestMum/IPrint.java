@@ -13,10 +13,7 @@ public interface IPrint {
 	}
 
 	default StringBackend print() {
-		StringBackend back = new StringBackend(DEFAULT_LINE_WIDTH);
-		Layouter<NoExceptions> pp = new Layouter<NoExceptions>(back, DEFAULT_INDENTATION);
-		printLocal(pp);
-		return back;
+	    return print(DEFAULT_LINE_WIDTH, DEFAULT_INDENTATION);
 	}
 
 	void printLocal(Layouter<NoExceptions> pp);
