@@ -13,7 +13,31 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic;
 //import noa.PGen;
+
+
+//@SupportedAnnotationTypes("fully.qualified.name.of.InternalAnnotationType")
+//@SupportedSourceVersion(SourceVersion.RELEASE_6)
+//public class CustomAnnotationProcessor extends AbstractProcessor {
+//
+//    @Override
+//    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+//        for (Element element : roundEnv.getElementsAnnotatedWith(InternalAnnotationType.class)) {
+//            InternalAnnotationType internalAnnotation = element.getAnnotation(InternalAnnotationType.class);
+//            String message = "The method " + element.getSimpleName()
+//                       + " is marked internal and its use is discouraged";
+//            processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, message);
+//        }
+//        return true;
+//    }
+//}
 
 @SupportedAnnotationTypes(value = { "anno.PP" })
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
@@ -82,6 +106,7 @@ public class PPProcessor extends AbstractProcessor {
 			String name = element.getSimpleName().toString();
 			String res = createPPClass(folder, (TypeElement) element, lTypeArgs, typeArgs);
 
+            PP pp = element.getAnnotation(PP.class);
 			try {
 				JavaFileObject jfo;
 				jfo = filer.createSourceFile(folder + "/" + nameGenPP(name), element);
@@ -378,6 +403,10 @@ public class PPProcessor extends AbstractProcessor {
 					// override the printing method here.
 					res += TAB + "@Override\n";
 					res += TAB + "public IPrint " + e.getSimpleName() + "(";
+					
+					String message = "The method " + e.getSimpleName()
+                       + " prints a primitive type and should be manually overridden";
+					processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, message);
 					// Determine the correct Java type of the parameter to be
 					// fed into this
 					// printing method
