@@ -3,7 +3,6 @@ package anno;
 import java.util.List;
 
 import javax.lang.model.type.*;
-import anno.utils.AnnoUtils;
 
 public class PrintMethodVisitor implements TypeVisitor<String, String[]> {
 
@@ -28,9 +27,9 @@ public class PrintMethodVisitor implements TypeVisitor<String, String[]> {
 
 	for (int i = 0; i < lp.size(); ++i) {
 	    // contains a list of type variables
-	    if (AnnoUtils.arrayContains(lListTypeArgs, lp.get(i).toString()) != -1) {
+	    if (Utils.arrayContains(lListTypeArgs, lp.get(i).toString()) != -1) {
 		res += "java.util.List<String> p" + i;
-	    } else if (AnnoUtils.arrayContains(lTypeArgs, lp.get(i).toString()) != -1) {
+	    } else if (Utils.arrayContains(lTypeArgs, lp.get(i).toString()) != -1) {
 		res += "String p" + i;
 	    } else {
 		res += lp.get(i).toString() + " p" + i;

@@ -6,7 +6,6 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 
-import anno.utils.AnnoUtils;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -21,7 +20,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 
-import noa.annos.*;
+//import noa.annos.*;
 //import noa.PGen;
 
 
@@ -173,12 +172,24 @@ public class PPProcessor extends AbstractProcessor {
 		// we'll generate the appropriate printing method in an interface. The
 		// actual generation
 		// is done in the method "genInterfaceMethod"
+		
+		// Here we'll now get all the elements from the parents, since we've decomposed the thing.
+		List<TypeElement> parents = Utils.getAllInterfaces(te);
+		Set<Element> allElements = Utils.getUniqueElements(parents);
+		
+		// However it seems that we should also add the original elements in te itself?... Otherwise it doesn't work.
+		// Yeah, this is correct.
 		List<? extends Element> le = te.getEnclosedElements();
+		allElements.addAll(le);
 		// This is trying to go through all single piece of grammar in the Alg file.
-		for (Element e : le) {
+		for (Element e : allElements) {
 			String methodName = e.getSimpleName().toString();
 			String[] args = { methodName, typeArgs, name };
 			res += genInterfaceMethod((ExecutableElement) e, typeArgs);
+			
+			// Debugging
+//			res += e + "\n";
+//			res += e.getAnnotation(Syntax.class) + "\n";
 		}
 
 		res += "}\n\n";
@@ -187,11 +198,15 @@ public class PPProcessor extends AbstractProcessor {
 
 		// Here we generate the printing method for all things that need
 		// overriding.
-		for (Element e : le) {
+		for (Element e : allElements) {
 			String methodName = e.getSimpleName().toString();
 			String[] args = { methodName, typeArgs, name };
 			// res += e.asType().accept(new PrintMethodVisitor(), args);
 			res += genClassMethod((ExecutableElement) e, typeArgs);
+			
+			// Debugging
+//			res += e + "\n";
+//			res += e.getAnnotation(Syntax.class) + "\n";
 		}
 
 		res += "}\n";
@@ -216,9 +231,9 @@ public class PPProcessor extends AbstractProcessor {
 		// Determine the correct Java type of the parameter to be fed into this
 		// printing method
 		for (int tempParamCount = 0; tempParamCount < params.size(); ++tempParamCount) {
-			if (AnnoUtils.arrayContains(lListTypeArgs, params.get(tempParamCount).asType().toString()) != -1) {
+			if (Utils.arrayContains(lListTypeArgs, params.get(tempParamCount).asType().toString()) != -1) {
 				res += "java.util.List<IPrint> p" + tempParamCount;
-			} else if (AnnoUtils.arrayContains(lTypeArgs, params.get(tempParamCount).asType().toString()) != -1) {
+			} else if (Utils.arrayContains(lTypeArgs, params.get(tempParamCount).asType().toString()) != -1) {
 				res += "IPrint p" + tempParamCount;
 			} else {
 				// Have to add break between parameters otherwise they'll all be
@@ -270,7 +285,7 @@ public class PPProcessor extends AbstractProcessor {
 					String separator = getSeparator(synList[synListCount]);
 					// Here the arrayOutOfBounds error is thrown for function
 					// invocation of Mumbler.
-					if (AnnoUtils.arrayContains(lListTypeArgs, params.get(paramCount).asType().toString()) != -1) {
+					if (Utils.arrayContains(lListTypeArgs, params.get(paramCount).asType().toString()) != -1) {
 						// In this case the argument itself is a list of
 						// printers.
 						res += TAB3 + "for (int count = 0; count < " + paramName + ".size() - 1; count++) {\n";
@@ -289,10 +304,10 @@ public class PPProcessor extends AbstractProcessor {
 
 				// Currently we skip all the types that are not primitive types.
 				// We had an EmptyList exception here. The only possible cause can only be the params being empty.
-				if (!params.isEmpty() && AnnoUtils.arrayContains(lListTypeArgs, params.get(paramCount).asType().toString()) != -1) {
+				if (!params.isEmpty() && Utils.arrayContains(lListTypeArgs, params.get(paramCount).asType().toString()) != -1) {
 					// TODO: error: list type does not match!
 					// res += "Error here. List type mismatch occurence 2.";
-				} else if (!params.isEmpty() && AnnoUtils.arrayContains(lTypeArgs, params.get(paramCount).asType().toString()) != -1) {
+				} else if (!params.isEmpty() && Utils.arrayContains(lTypeArgs, params.get(paramCount).asType().toString()) != -1) {
 					// In this case it's just one single printer argument, not a
 					// list.
 					res += TAB3 + paramName + ".printLocal(pp);\n";
@@ -408,9 +423,9 @@ public class PPProcessor extends AbstractProcessor {
 					// Just deleted all the code that was here.
 				}
 
-				if (!params.isEmpty() && AnnoUtils.arrayContains(lListTypeArgs, params.get(paramCount).asType().toString()) != -1) {
+				if (!params.isEmpty() && Utils.arrayContains(lListTypeArgs, params.get(paramCount).asType().toString()) != -1) {
 					// Just deleted all the code that was here.
-				} else if (!params.isEmpty() && AnnoUtils.arrayContains(lTypeArgs, params.get(paramCount).asType().toString()) != -1) {
+				} else if (!params.isEmpty() && Utils.arrayContains(lTypeArgs, params.get(paramCount).asType().toString()) != -1) {
 				} else { // int, bool, float....
 					// In this case it's a primitive type. We'll ask the user to
 					// override the printing method here.
@@ -425,10 +440,10 @@ public class PPProcessor extends AbstractProcessor {
 					// fed into this
 					// printing method
 					for (int tempParamCount = 0; tempParamCount < params.size(); ++tempParamCount) {
-						if (AnnoUtils.arrayContains(lListTypeArgs,
+						if (Utils.arrayContains(lListTypeArgs,
 								params.get(tempParamCount).asType().toString()) != -1) {
 							res += "java.util.List<IPrint> p" + tempParamCount;
-						} else if (AnnoUtils.arrayContains(lTypeArgs,
+						} else if (Utils.arrayContains(lTypeArgs,
 								params.get(tempParamCount).asType().toString()) != -1) {
 							res += "IPrint p" + tempParamCount;
 						} else {
