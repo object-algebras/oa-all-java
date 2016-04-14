@@ -47,6 +47,7 @@ public class PPProcessor extends AbstractProcessor {
 	public static final String TAB2 = "\t\t";
 	public static final String TAB3 = "\t\t\t";
 	public static final String TAB4 = "\t\t\t\t";
+	public static final String TAB5 = "\t\t\t\t\t";
 
 	private Filer filer;
 	// Not working at the moment.
@@ -298,19 +299,17 @@ public class PPProcessor extends AbstractProcessor {
 							&& Utils.arrayContains(lListTypeArgs, params.get(paramCount).asType().toString()) != -1) {
 						// In this case the argument itself is a list of
 						// printers.
-						res += TAB3 + "for (int count = 0; count < " + paramName + ".size() - 1; count++) {\n";
-						res += TAB4 + paramName + ".get(count).printLocal(pp);\n";
-						res += TAB4 + "pp.print(\"" + separator + "\");\n";
-						res += TAB4 + "pp.brk();\n";
-						res += TAB3 + "}\n";
+						// However actually this list can be just totally empty. For example (f), which just invokes the function itself without any arguments. So we'll actually have to check this first otherwise there will be a null pointer exception.
+						res += TAB3 + "if (!(" + paramName + " == null) && !" + paramName + ".isEmpty()) {\n";
+						res += TAB4 + "for (int count = 0; count < " + paramName + ".size() - 1; count++) {\n";
+						res += TAB5 + paramName + ".get(count).printLocal(pp);\n";
+						res += TAB5 + "pp.print(\"" + separator + "\");\n";
+						res += TAB5 + "pp.brk();\n";
+						res += TAB4 + "}\n";
 						// Print the last element of the list without printing
 						// extra breaks.
-
-						// However for some reason this sometimes still fails
-						// for a list of length 0? Check params empty?
-						res += TAB3 + "if (!" + paramName + ".isEmpty()) {\n";
-						res += TAB4 + paramName + ".get(" + paramName + ".size() - 1).printLocal(pp);\n";
-						res += TAB3 + "};\n";
+						res += TAB3 + paramName + ".get(" + paramName + ".size() - 1).printLocal(pp);\n";
+						res += TAB3 + "}\n";
 					} else {
 						// TODO: error: list type does not match!
 						// res += "Error here. List type mismatch occurence 1.";
@@ -347,7 +346,7 @@ public class PPProcessor extends AbstractProcessor {
 					// "genClassMethod"
 
 					// First we'll have to ensure there's actually some param
-					// out there. Otherwise this will be a mismatch.
+					// out there. Otherwise this will be a mismatch. e.g. newline
 					if (!params.isEmpty()) {
 						String temp = "\"\" + " + paramName;
 						res += TAB3 + "pp.print(" + temp + ");\n";
@@ -360,6 +359,7 @@ public class PPProcessor extends AbstractProcessor {
 
 					// We add a space unless the literal is the last one or is
 					// followed by )
+					// However it seems there is another issue where even if the previous argument is completely empty, we'd still add a brk() here.
 					if (!(synListCount == synList.length - 1) && !(synList[synListCount + 1].contains(")"))) {
 						res += TAB3 + "pp.brk();\n";
 					}
