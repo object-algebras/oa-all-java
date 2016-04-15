@@ -6,6 +6,12 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 
+//import noa.util.Alt;
+//import noa.util.ConventionsPP;
+//import noa.util.NormalAlt;
+//import noa.util.*;
+//import noa.*;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -19,26 +25,194 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 
-//import noa.annos.*;
-//import noa.PGen;
+// Not working
+import static anno.ConventionsPP.getRegularSymbol;
+import static anno.ConventionsPP.getSepListSymbol;
+import static anno.ConventionsPP.getSepListToken;
+import static anno.ConventionsPP.isEOF;
+import static anno.ConventionsPP.isLiteral;
+import static anno.ConventionsPP.isNonTerminal;
+import static anno.ConventionsPP.isRegular;
+import static anno.ConventionsPP.isSepList;
+import static anno.ConventionsPP.isToken;
+import static anno.ConventionsPP.isZeroOrMoreSepList;
+import static anno.ConventionsPP.labelFor;
+import static anno.ConventionsPP.returnVariable;
+
+// Alt and NormalAlt are for debugging and are not intended to be staying here permanently.
+abstract class Alt implements Comparable<Alt>, ConventionsPP {
+	private String nt;
+	private int prec;
+
+	public Alt(String nt, int prec) {
+		this.nt = nt;
+		this.prec = prec;
+	}
+
+	public int getLevel() {
+		return prec;
+	}
+
+	public String getNT() {
+		return nt;
+	}
+
+	@Override
+	public int compareTo(Alt o) {
+		return new Integer(o.getLevel()).compareTo(getLevel());
+	}
+}
+
+class NormalAlt extends Alt implements ConventionsPP {
+
+	private List<String> syms;
+	private String cons;
+	private int labelCounter;
+
+	public NormalAlt(String nt, int prec, String cons, List<String> syms, int labelCounter) {
+		super(nt, prec);
+		this.cons = cons;
+		this.syms = syms;
+		this.labelCounter = labelCounter;
+	}
+
+	public boolean isInfix() {
+		String op = syms.get(1);
+		return syms.size() == 3 && (ConventionsPP.isToken(op) || ConventionsPP.isLiteral(op));
+	}
+
+	public String getOperator() {
+		assert isInfix();
+		return syms.get(1);
+	}
+
+	public String getLhs() {
+		assert isInfix();
+		return syms.get(0);
+	}
+
+	public String getRhs() {
+		assert isInfix();
+		return syms.get(2);
+	}
+
+	private boolean isNEWLINE(String s) {
+		return s.equals("NEWLINE");
+	}
+
+	public String toString() {
+		String prod = "";
+		String args = "";
+		// int labelCounter = 0;
+
+		for (String s : syms) {
+			// add some judgement on null
+			if (ConventionsPP.isEOF(s)) {
+				prod += s;
+			} else if (s.equals("NEWLINE") | s.equals("INDENT") | s.equals("DEDENT")) {
+				prod += s;
+			} else if (ConventionsPP.isNonTerminal(s)) {
+				prod += ConventionsPP.labelFor(labelCounter, s) + "=" + s + " ";
+				args += "($" + ConventionsPP.labelFor(labelCounter, s) + ".ctx==null?" + "null:" + "($"
+						+ ConventionsPP.labelFor(labelCounter, s) + "." + ConventionsPP.returnVariable(s) + ")),";
+				labelCounter += 1;
+			} else if (ConventionsPP.isRegular(s)) {
+				String n = ConventionsPP.getRegularSymbol(s);
+				if (n.equals("+")) {
+					prod += ConventionsPP.labelFor(labelCounter, n) + "+=" + s.substring(0, s.length() - 1) + " ";
+					args += args += "lift(\"" + ConventionsPP.returnVariable(n) + "\", $"
+							+ ConventionsPP.labelFor(labelCounter, n) + "),";
+				} else {
+					prod += ConventionsPP.labelFor(labelCounter, n) + "+=" + s + " ";
+					args += "lift(\"" + ConventionsPP.returnVariable(n) + "\", $"
+							+ ConventionsPP.labelFor(labelCounter, n) + "),";
+				}
+				labelCounter += 1;
+			} else if (ConventionsPP.isToken(s)) {
+				prod += ConventionsPP.labelFor(labelCounter, s) + "=" + s + " ";
+				args += s.toLowerCase() + "($" + ConventionsPP.labelFor(labelCounter, s) + ".text),";
+				labelCounter += 1;
+			} else if (ConventionsPP.isSepList(s)) {
+				// generate seplist rules in 3 situations: token separator,
+				// non-terminal separator and symbols
+				String n = ConventionsPP.getSepListSymbol(s);
+				String label = ConventionsPP.labelFor(labelCounter, n);
+				String eltHead = label + "=" + n;
+				String eltTail = label + "tail+=" + n;
+				String sep = ConventionsPP.getSepListToken(s);
+				if (ConventionsPP.isToken(sep)) {
+					prod += "(" + eltHead + " (" + ConventionsPP.labelFor(labelCounter, sep) + "+=" + sep + " "
+							+ eltTail + ")*)";
+					args += "liftString($" + ConventionsPP.labelFor(labelCounter, sep) + "==null? null :$"
+							+ ConventionsPP.labelFor(labelCounter, sep) + "), " + "($" + label + ".ctx==null||" + "$"
+							+ label + "tail==null)?" + " null : (lift(\"" + ConventionsPP.returnVariable(n) + "\", $"
+							+ label + "tail, " + "$" + label + "." + ConventionsPP.returnVariable(n) + ")),";
+				} else if (ConventionsPP.isNonTerminal(sep)) {
+					prod += "(" + eltHead + " (" + ConventionsPP.labelFor(labelCounter, sep) + "+=" + sep + " "
+							+ eltTail + ")*)";
+					args += " ($" + ConventionsPP.labelFor(labelCounter, sep) + "==null? " + "null : lift(\""
+							+ ConventionsPP.returnVariable(sep) + "\", $" + ConventionsPP.labelFor(labelCounter, sep)
+							+ ") ), " + "($" + label + ".ctx==null||" + "$" + label + "tail==null)?"
+							+ " null : (lift(\"" + ConventionsPP.returnVariable(n) + "\", $" + label + "tail, " + "$"
+							+ label + "." + ConventionsPP.returnVariable(n) + ")),";
+				} else {
+					prod += "(" + eltHead + " (" + sep + " " + eltTail + ")*)";
+					args += " ($" + label + ".ctx==null||" + "$" + label + "tail==null)?" + " null : (lift(\""
+							+ ConventionsPP.returnVariable(n) + "\", $" + label + "tail, " + "$" + label + "."
+							+ ConventionsPP.returnVariable(n) + ")),";
+				}
+				if (ConventionsPP.isZeroOrMoreSepList(s)) {
+					prod += "?";
+				}
+				// args += "lift(\"" + ConventionsPP.returnVariable(n) + "\", $"
+				// + label +
+				// "tail, " + "$" + label + "."
+				// + ConventionsPP.returnVariable(n) + "),";
+				labelCounter += 1;
+			} else {
+				prod += s + " ";
+				labelCounter += 1;
+			}
+		}
+		if (!args.isEmpty()) {
+			// remove trailing comma
+			args = args.substring(0, args.length() - 1);
+		}
+		// if (syms.size() == 0)
+		// prod += "{}";
+		// else
+		prod += " {$" + ConventionsPP.returnVariable(getNT()) + " = " + BUILDER_FIELD + "." + cons + "(" + args + ");}";
+		return prod;
+	}
+
+	public String getCons() {
+		return cons;
+	}
+
+}
+// import noa.annos.*;
+// import noa.PGen;
 
 // This is just an example of adding custom warning.
 
-//@SupportedAnnotationTypes("fully.qualified.name.of.InternalAnnotationType")
-//@SupportedSourceVersion(SourceVersion.RELEASE_6)
-//public class CustomAnnotationProcessor extends AbstractProcessor {
+// @SupportedAnnotationTypes("fully.qualified.name.of.InternalAnnotationType")
+// @SupportedSourceVersion(SourceVersion.RELEASE_6)
+// public class CustomAnnotationProcessor extends AbstractProcessor {
 //
-//    @Override
-//    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-//        for (Element element : roundEnv.getElementsAnnotatedWith(InternalAnnotationType.class)) {
-//            InternalAnnotationType internalAnnotation = element.getAnnotation(InternalAnnotationType.class);
-//            String message = "The method " + element.getSimpleName()
-//                       + " is marked internal and its use is discouraged";
-//            processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, message);
-//        }
-//        return true;
-//    }
-//}
+// @Override
+// public boolean process(Set<? extends TypeElement> annotations,
+// RoundEnvironment roundEnv) {
+// for (Element element :
+// roundEnv.getElementsAnnotatedWith(InternalAnnotationType.class)) {
+// InternalAnnotationType internalAnnotation =
+// element.getAnnotation(InternalAnnotationType.class);
+// String message = "The method " + element.getSimpleName()
+// + " is marked internal and its use is discouraged";
+// processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, message);
+// }
+// return true;
+// }
+// }
 
 @SupportedAnnotationTypes(value = { "anno.PP" })
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
@@ -189,9 +363,9 @@ public class PPProcessor extends AbstractProcessor {
 			String[] args = { methodName, typeArgs, name };
 			res += genInterfaceMethod((ExecutableElement) e, typeArgs);
 
-			// Debugging
-			// res += e + "\n";
-			// res += e.getAnnotation(Syntax.class) + "\n";
+			// // Debugging
+			// // res += e + "\n";
+			// // res += e.getAnnotation(Syntax.class) + "\n";
 		}
 
 		res += "}\n\n";
@@ -229,175 +403,491 @@ public class PPProcessor extends AbstractProcessor {
 
 		String res = "";
 		res += TAB + "default IPrint " + e.getSimpleName() + "(";
+		// Notice that there is a possibility of this piece of grammar having
+		// zero parameters.
 		List<? extends VariableElement> params = e.getParameters();
 
-		// Determine the correct Java type of the parameter to be fed into this
-		// printing method
+		// This is the part where we create the arguments for the header of the
+		// print function of this piece of grammar.
+		// We go through all the parameters of this piece of grammar.
 		for (int tempParamCount = 0; tempParamCount < params.size(); ++tempParamCount) {
+			// In this case this parameter is List<E> or List<M>, then we'll
+			// pass it in as List<IPrint>
 			if (Utils.arrayContains(lListTypeArgs, params.get(tempParamCount).asType().toString()) != -1) {
 				res += "java.util.List<IPrint> p" + tempParamCount;
-			} else if (Utils.arrayContains(lTypeArgs, params.get(tempParamCount).asType().toString()) != -1) {
+			} else if (Utils.arrayContains(lTypeArgs, params.get(tempParamCount).asType().toString()) != -1) { // In
+																												// this
+																												// case
+																												// it's
+																												// a
+																												// normal
+																												// type,
+																												// so
+																												// it
+																												// will
+																												// only
+																												// be
+																												// one
+																												// IPrint.
 				res += "IPrint p" + tempParamCount;
-			} else {
-				// Have to add break between parameters otherwise they'll all be
-				// crammed together.
+			} else { // In the last case it's likely to be a primitive type. We
+						// can just put its type directly out there.
 				res += params.get(tempParamCount).asType().toString() + " p" + tempParamCount;
 			}
+			// This is to add the , between parameters in Java
 			if (tempParamCount < params.size() - 1)
 				res += ", ";
 		}
 		res += ") {\n";
-		// Now let me also try to output what method is being currently invoked
-		// to the standard output.
-		res += TAB2 + "System.out.println(\"We're currently trying to invoke default method " + e.getSimpleName() + " with parameters " + e.getParameters()
-				+ "\");\n";
 
-		// This was the beginning of returning a string.
+		// Now let me also try to output what method is being currently invoked
+		// to the standard output. Debugging.
+		res += TAB2 + "System.out.println(\"We're currently trying to invoke default method " + e.getSimpleName()
+				+ " with parameters " + e.getParameters() + "\");\n";
+
+		// This was the beginning of the method body
 		res += TAB2 + "return (Layouter<NoExceptions> pp) -> {\n";
 		res += TAB3 + "pp.beginI();\n";
 
 		// We already defined an annotation in our framework called "Syntax" for
 		// each language. We're just extracting that information.
-		String syn = e.getAnnotation(Syntax.class).value();
+		Syntax anno = e.getAnnotation(Syntax.class);
+		if (anno == null) {
+			System.err.println("Warning: method without syntax/token anno: " + e);
+			return "";
+		}
+		String syn = anno.value();
 		String[] synList = syn.split(" ");
 
-		// It seems that we start from synListCount = 2 bceause the first two
+		// DEBUGGING: Trying to see how NOA produces the grammar production for
+		// this piece of grammar.
+		List<String> realSyms = Arrays.asList(synList).subList(2, synList.length);
+		Level precAnno = e.getAnnotation(Level.class);
+		int prec = ConventionsPP.MAX_PRECEDENCE;
+		if (precAnno != null) {
+			prec = precAnno.value();
+		}
+		// noa.util.NormalAlt na = new noa.util.NormalAlt(synList[0], prec,
+		// e.getSimpleName().toString(), realSyms, 0);
+		// noa.util.NormalAlt na = new noa.util.NormalAlt(synList[0], 100,
+		// e.getSimpleName().toString(), realSyms, 0);
+		NormalAlt na = new NormalAlt(synList[0], 100, e.getSimpleName().toString(), realSyms, 0);
+		res += TAB3 + "// The string produced by NOA is: " + na.toString() + "\n";
+		// labelCounter+=realSyms.size();
+
+		// We start from synListCount = 2 bceause the first two
 		// things are
 		// `form =`, mandatory components of the annotation.
 		int paramCount = 0, synListCount = 2;
+		// We start processing all the symbols within the @Syntax annotation.
 		while (synListCount < synList.length) {
-			// If the symbol starts with ' then this symbols is a keyword.
-			while (synListCount < synList.length && synList[synListCount].startsWith("\'")) {
-				// substring(1, length() - 1) is to get rid of the ' ' at both
-				// ends.
-				String currentSyn = synList[synListCount].substring(1, synList[synListCount].length() - 1);
+			// // Debugging information
+			res += TAB3 + "// We're currently processing symbol " + synList[synListCount] + "\n";
+			String s = synList[synListCount];
+			String paramName = "p" + paramCount;
 
-				res += TAB3 + "pp.print(" + "\"" + currentSyn + "\");\n";
-				// Note a space is added after the keyword, if synListCount is
+			if (isEOF(s)) {
+				res += "\n";
+			} else if (s.equals("NEWLINE")) {
+				res += "\n";
+			} else if (s.equals("INDENT")) {
+				res += TAB3 + "pp.beginI();\n";
+			} else if (s.equals("DEDENT")) {
+				res += TAB3 + "pp.end();\n";
+			} else if (isNonTerminal(s)) { // NonTerminals start with lowercase
+				// I think it should just correspond with the current parameter.
+				// Could it be the parameter with the same id as the current
+				// syn? No I don't think that's necessarily related.
+				// params.get(paramCount);
+
+				// In this case it's just one single printer argument,
 				// not a
-				// starting parentheses or the last symbol.
-				if (!(currentSyn.contains("(") || synListCount > synList.length - 2)) {
-					res += TAB3 + "pp.brk();\n";
+				// list.
+
+				res += TAB3 + paramName + ".printLocal(pp);\n";
+				paramCount++;
+			} else if (isRegular(s)) { // "regular" means nonTerminal+/?
+				// String n = getRegularSymbol(s);
+				// if (n.equals("+")) {
+				//
+				// } else { // else it's ?
+				//
+				// }
+				// However I don't think being + or ? makes any difference here.
+				// For the argument part it will just always be a List argument
+				// of length either 1 or 0. Let's see if this assumption is
+				// correct.
+				// res += TAB3 + "// The type is " +
+				// params.get(paramCount).asType().toString() + "\n";
+				res += TAB3 + "if (!(" + paramName + " == null) && !" + paramName + ".isEmpty()) {\n";
+				res += TAB4 + "for (int count = 0; count < " + paramName + ".size() - 1; count++) {\n";
+				res += TAB5 + paramName + ".get(count).printLocal(pp);\n";
+				res += TAB5 + "pp.brk();\n";
+				res += TAB4 + "}\n";
+				// Print the last element of the list without printing
+				// extra breaks.
+				res += TAB4 + paramName + ".get(" + paramName + ".size() - 1).printLocal(pp);\n";
+				res += TAB3 + "}\n";
+				paramCount++;
+			} else if (isToken(s)) { // Token is something starting with upper
+										// case. Supposedly they should all be
+										// primitive types!
+				// In this case it's a primitive type. We should just
+				// directly print its literal representation.
+				// The \"\" here is just a hack to force the param to be
+				// displayed as String without having to call
+				// `toString`...
+
+				// In these types we will ask the user to
+				// manually implement things. The code is in the method
+				// "genClassMethod"
+
+				// First we'll have to ensure there's actually some
+				// param
+				// out there. Otherwise this will be a mismatch. e.g.
+				// newline
+				if (!params.isEmpty()) {
+					res += TAB3 + "// Please write manual printing method for this piece of grammar if necessary.\n";
+					String temp = "\"\" + " + paramName;
+					res += TAB3 + "pp.print(" + temp + ");\n";
+					paramCount++;
+				} else {
+					// Should remind the user to manually write
+					// something
+					// here.
+					// Will try to add warning later.
+					res += TAB3 + "// Please write manual printing method for this piece of grammar.\n";
 				}
-				synListCount++;
-			}
-			// It seems that the additional check is because synListCount could
-			// also be
-			// incremented inside of the while loop itself. (synListCount++)
-			if (synListCount < synList.length) {
-				String paramName = "p" + paramCount;
-				String str = synList[synListCount];
-				// So "@" indicates the place where separators are to appear
-				// following it.
-				if (str.contains("@")) {
-					String separator = getSeparator(synList[synListCount]);
-					// Here the arrayOutOfBounds error is thrown for function
-					// invocation of Mumbler.
-					// However for some reason this sometimes still fails for a
-					// list of length 0? Check params empty?
-					if (!params.isEmpty()
-							&& Utils.arrayContains(lListTypeArgs, params.get(paramCount).asType().toString()) != -1) {
-						// In this case the argument itself is a list of
-						// printers.
-						// However actually this list can be just totally empty. For example (f), which just invokes the function itself without any arguments. So we'll actually have to check this first otherwise there will be a null pointer exception.
-						res += TAB3 + "if (!(" + paramName + " == null) && !" + paramName + ".isEmpty()) {\n";
-						res += TAB4 + "for (int count = 0; count < " + paramName + ".size() - 1; count++) {\n";
-						res += TAB5 + paramName + ".get(count).printLocal(pp);\n";
-						res += TAB5 + "pp.print(\"" + separator + "\");\n";
+
+				// We add a space unless the literal is the last one or
+				// is
+				// followed by )
+				// However it seems there is another issue where even if
+				// the previous argument is completely empty, we'd still
+				// add a brk() here.
+			} else if (isSepList(s)) {
+				// generate seplist rules in 3 situations: token separator,
+				// non-terminal separator and symbols
+				String n = getSepListSymbol(s);
+				// String label = labelFor(labelCounter, n);
+				// String eltHead = label + "=" + n;
+				// String eltTail = label + "tail+=" + n;
+				String sep = getSepListToken(s);
+				if (isToken(sep)) { // isToken means it's a terminal. Then it's
+									// likely to be a list of strings.
+					String nextParamName = "p" + (paramCount + 1);
+					res += TAB3 + "if (!(" + nextParamName + " == null) && !" + paramName + ".isEmpty()) {\n";
+					res += TAB4 + "for (int count = 0; count < " + nextParamName + ".size() - 1; count++) {\n";
+					res += TAB5 + nextParamName + ".get(count).printLocal(pp);\n";
+					res += TAB5 + "pp.brk();\n";
+					res += TAB5 + "pp.print(" + paramName + ".get(count));\n";
+					res += TAB5 + "pp.brk();\n";
+					res += TAB4 + "}\n";
+					// Print the last element of the list without printing
+					// extra breaks.
+					res += TAB4 + nextParamName + ".get(" + nextParamName + ".size() - 1).printLocal(pp);\n";
+					res += TAB3 + "}\n";
+					paramCount += 2;
+				} else if (isNonTerminal(sep)) {
+					// In this case the normal pattern is that the current param
+					// is the list of separators, while the next param is the
+					// list of things being separated.
+					String nextParamName = "p" + (paramCount + 1);
+					res += TAB3 + "if (!(" + nextParamName + " == null) && !" + paramName + ".isEmpty()) {\n";
+					res += TAB4 + "for (int count = 0; count < " + nextParamName + ".size() - 1; count++) {\n";
+					res += TAB5 + nextParamName + ".get(count).printLocal(pp);\n";
+					res += TAB5 + "pp.brk();\n";
+					res += TAB5 + paramName + ".get(count).printLocal(pp);\n";
+					res += TAB5 + "pp.brk();\n";
+					res += TAB4 + "}\n";
+					// Print the last element of the list without printing
+					// extra breaks.
+					res += TAB4 + nextParamName + ".get(" + nextParamName + ".size() - 1).printLocal(pp);\n";
+					res += TAB3 + "}\n";
+					paramCount += 2;
+				} else { // Else it's like to be just a symbol
+							// In this case the argument itself is a list of
+							// printers.
+							// However actually this list can be just totally
+							// empty.
+							// For example (f), which just invokes the function
+							// itself without any arguments. So we'll actually
+							// have
+							// to check this first otherwise there will be a
+							// null
+							// pointer exception.
+					res += TAB3 + "if (!(" + paramName + " == null) && !" + paramName + ".isEmpty()) {\n";
+					res += TAB4 + "for (int count = 0; count < " + paramName + ".size() - 1; count++) {\n";
+					res += TAB5 + paramName + ".get(count).printLocal(pp);\n";
+					// If no separator, should just give a new line?
+					if (sep.isEmpty()) {
+						res += TAB5 + "pp.nl();\n";
+					} else {
+						res += TAB5 + "pp.print(\"" + sep + "\");\n";
 						res += TAB5 + "pp.brk();\n";
-						res += TAB4 + "}\n";
-						// Print the last element of the list without printing
-						// extra breaks.
-						res += TAB3 + paramName + ".get(" + paramName + ".size() - 1).printLocal(pp);\n";
-						res += TAB3 + "}\n";
-					} else {
-						// TODO: error: list type does not match!
-						// res += "Error here. List type mismatch occurence 1.";
 					}
-				}
-
-				// Currently we skip all the types that are not primitive types.
-				// We had an EmptyList exception here. The only possible cause
-				// can only be the params being empty.
-				if (!params.isEmpty()
-						&& Utils.arrayContains(lListTypeArgs, params.get(paramCount).asType().toString()) != -1) {
-					// TODO: error: list type does not match!
-					// res += "Error here. List type mismatch occurence 2.";
-				} else if (!params.isEmpty()
-						&& Utils.arrayContains(lTypeArgs, params.get(paramCount).asType().toString()) != -1) {
-					// In this case it's just one single printer argument, not a
-					// list.
-					res += TAB3 + paramName + ".printLocal(pp);\n";
-					// Have to add space between parameters otherwise they'll
-					// all be crammed together.
-					// We add a break unless the param is the last one or is
-					// followed by )
-					if (!(synListCount == synList.length - 1) && !(synList[synListCount + 1].contains(")"))) {
-						res += TAB3 + "pp.brk();\n";
-					}
-				} else { // int, bool, float....
-					// In this case it's a primitive type. We should just
-					// directly print its literal representation.
-					// The \"\" here is just a hack to force the param to be
-					// displayed as String without having to call `toString`...
-
-					// In these types we will ask the user to
-					// manually implement things. The code is in the method
-					// "genClassMethod"
-
-					// First we'll have to ensure there's actually some param
-					// out there. Otherwise this will be a mismatch. e.g. newline
-					if (!params.isEmpty()) {
-						String temp = "\"\" + " + paramName;
-						res += TAB3 + "pp.print(" + temp + ");\n";
-					} else {
-						// Should remind the user to manually write something
-						// here.
-						// Will try to add warning later.
-						res += TAB3 + "// Please write manual printing method for this piece of grammar.";
-					}
-
-					// We add a space unless the literal is the last one or is
-					// followed by )
-					// However it seems there is another issue where even if the previous argument is completely empty, we'd still add a brk() here.
-					if (!(synListCount == synList.length - 1) && !(synList[synListCount + 1].contains(")"))) {
-						res += TAB3 + "pp.brk();\n";
-					}
-				}
-				// Preventative for arrayOutOfBounds error.
-				if (paramCount < params.size() - 1) {
+					res += TAB4 + "}\n";
+					// Print the last element of the list without printing
+					// extra breaks.
+					res += TAB4 + paramName + ".get(" + paramName + ".size() - 1).printLocal(pp);\n";
+					res += TAB3 + "}\n";
 					paramCount++;
 				}
-				synListCount++;
+				if (isZeroOrMoreSepList(s)) {
+					// Do we need to do anything?
+					res += TAB3 + "// We found zeroOrMoreSepList, so?\n";
+				}
+			} else { // Then it should really just be a keyword string, print it
+						// as it is.
+				if (s.length() > 1) {
+					s = s.substring(1, s.length() - 1);
+				}
+				res += TAB3 + "pp.print(" + "\"" + s + "\");\n";
 			}
+			// If it's not the last element we should probably add a break
+			// Actually now I'm not sure whether ) is a good indicator. Let's
+			// see.
+//			if (!(synListCount == synList.length - 1) && !(synList[synListCount + 1].contains(")") && !(s.contains("(")))) {
+			if (!(s.contains("(") || synListCount > synList.length - 2 || synList[synListCount + 1].contains(")"))) {
+				res += TAB3 + "pp.brk();\n";
+			}
+			synListCount++;
 		}
-
-		res += "\n";
 		res += TAB3 + "pp.end();\n";
 		res += TAB2 + "};\n";
 		res += TAB + "}\n";
-
-		/* print debugging info. */
-		res += "/* \n";
-		res += "params.size(): " + params.size() + "\n";
-		res += "Original syn: " + syn + "\n";
-		res += "Original synList: " + Arrays.toString(synList) + "\n";
-		res += "synList.length: " + synList.length + "\n";
-		res += "e.getParameters(): " + e.getParameters() + "\n";
-		for (VariableElement param : params) {
-			res += param.toString() + ": " + param.asType() + "\n";
-		}
-		res += "typeArgs: " + typeArgs + "\n";
-		res += "lListTypeArgs: ";
-		for (String t : lListTypeArgs) {
-			res += t + ", ";
-		}
-		res += "\n";
-		res += e.getAnnotation(Syntax.class).value() + "\n";
-		res += "\n */ \n\n";
-
 		return res;
 	}
+	// Starting from this point is the old code.
+	// while (synListCount < synList.length) {
+	// // Debugging information
+	// res += TAB3 + "// We're currently processing symbol " +
+	// synList[synListCount] + "\n";
+	//
+
+	// If the symbol starts with ' then this symbols is a keyword. Still
+	// added the length check to be sure.
+	// However this doesn't make much sense. Why are we doing a while
+	// loop? What's the meaning of this thing anyways.
+	// while (synListCount < synList.length &&
+	// synList[synListCount].startsWith("\'")) {
+	// // substring(1, length() - 1) is to get rid of the ' ' at both
+	// // ends.
+	// String currentSyn = synList[synListCount].substring(1,
+	// synList[synListCount].length() - 1);
+	//
+	// // If it's a keyword then we'll just directly print it out in
+	// String form.
+	// res += TAB3 + "pp.print(" + "\"" + currentSyn + "\");\n";
+	// // Note a space is added after the keyword, if synListCount is
+	// // not a
+	// // starting parentheses or the last symbol.
+	// if (!(currentSyn.contains("(") || synListCount > synList.length -
+	// 2)) {
+	// res += TAB3 + "pp.brk();\n";
+	// }
+	// synListCount++;
+	// }
+
+	// Let me rewrite it and see what happens.
+	// if (synList[synListCount].startsWith("\'")) {
+	// // substring(1, length() - 1) is to get rid of the ' ' at both
+	// // ends.
+	// String currentSyn = synList[synListCount].substring(1,
+	// synList[synListCount].length() - 1);
+	//
+	// // If it's a keyword then we'll just directly print it out in
+	// // String form.
+	// res += TAB3 + "pp.print(" + "\"" + currentSyn + "\");\n";
+	// // Note a space is added after the keyword, if synListCount is
+	// // not a
+	// // starting parentheses or the last symbol.
+	// if (!(currentSyn.contains("(") || synListCount > synList.length - 2)) {
+	// res += TAB3 + "pp.brk();\n";
+	// }
+	// // synListCount++;
+	// } else { // Else it's not a keyword, we'll process it in other ways.
+	// String paramName = "p" + paramCount;
+	// String currentSyn = synList[synListCount];
+	// // Separators will be placed after @
+	// if (ConventionsPP.isSepList(currentSyn)) {
+	// String separator = ConventionsPP.getSepListToken(currentSyn);
+	// // We'll have to differentiate on the type of separators.
+	// // "params" means the parameters for the piece of grammar.
+	// // If this is a list type of argument.
+	// if (!params.isEmpty()
+	// && Utils.arrayContains(lListTypeArgs,
+	// params.get(paramCount).asType().toString()) != -1) {
+	// // In this case the argument itself is a list of
+	// // printers.
+	// // However actually this list can be just totally empty.
+	// // For example (f), which just invokes the function
+	// // itself without any arguments. So we'll actually have
+	// // to check this first otherwise there will be a null
+	// // pointer exception.
+	// res += TAB3 + "if (!(" + paramName + " == null) && !" + paramName +
+	// ".isEmpty()) {\n";
+	// res += TAB4 + "for (int count = 0; count < " + paramName + ".size() - 1;
+	// count++) {\n";
+	// res += TAB5 + paramName + ".get(count).printLocal(pp);\n";
+	// res += TAB5 + "pp.print(\"" + separator + "\");\n";
+	// res += TAB5 + "pp.brk();\n";
+	// res += TAB4 + "}\n";
+	// // Print the last element of the list without printing
+	// // extra breaks.
+	// res += TAB4 + paramName + ".get(" + paramName + ".size() -
+	// 1).printLocal(pp);\n";
+	// res += TAB3 + "}\n";
+	// } else {
+	// // TODO: error: list type does not match!
+	// // The error is that it claims to be a list type with @
+	// // in it, but then isn't actually a list type.
+	// // I think I know what the error is in this case: When
+	// // the list is of primitive type, somehow the program
+	// // just directly dismissed it.
+	// // res += TAB3 + "// Error here. List type mismatch
+	// // occurence 1.\n";
+	// // res += TAB3 + "// The type is " +
+	// // params.get(paramCount).asType().toString() + "\n";
+	// res += TAB3 + "if (!(" + paramName + " == null) && !" + paramName +
+	// ".isEmpty()) {\n";
+	// res += TAB4 + "for (int count = 0; count < " + paramName + ".size() - 1;
+	// count++) {\n";
+	// res += TAB5 + "pp.print(" + paramName + ".get(count));\n";
+	// res += TAB5 + "pp.print(\"" + separator + "\");\n";
+	// res += TAB5 + "pp.brk();\n";
+	// res += TAB4 + "}\n";
+	// // Print the last element of the list without printing
+	// // extra breaks.
+	// res += TAB4 + "pp.print(" + paramName + ".get(" + paramName + ".size() -
+	// 1));\n";
+	// res += TAB3 + "}\n";
+	// }
+	// } else { // It's not a list separated by @, but it might be some
+	// // other stuff out there.
+	//
+	// if (!params.isEmpty()
+	// && Utils.arrayContains(lListTypeArgs,
+	// params.get(paramCount).asType().toString()) != -1) {
+	// // This is probably not an error... What was the
+	// // original author thinking?
+	// // This just probably means it's some other type of
+	// // list, for example + or ?
+	// // Let's print some debugging info about the currentSyn
+	// res += TAB3 + "// The current symbol is " + currentSyn + "\n";
+	// res += TAB3 + "if (!(" + paramName + " == null) && !" + paramName +
+	// ".isEmpty()) {\n";
+	// res += TAB4 + "for (int count = 0; count < " + paramName + ".size() - 1;
+	// count++) {\n";
+	// res += TAB5 + paramName + ".get(count).printLocal(pp);\n";
+	// res += TAB5 + "pp.brk();\n";
+	// res += TAB4 + "}\n";
+	// // Print the last element of the list without printing
+	// // extra breaks.
+	// res += TAB3 + paramName + ".get(" + paramName + ".size() -
+	// 1).printLocal(pp);\n";
+	// res += TAB3 + "}\n";
+	// } else if (!params.isEmpty()
+	// && Utils.arrayContains(lTypeArgs,
+	// params.get(paramCount).asType().toString()) != -1) {
+	// // In this case it's just one single printer argument,
+	// // not a
+	// // list.
+	// res += TAB3 + paramName + ".printLocal(pp);\n";
+	// // Have to add space between parameters otherwise
+	// // they'll
+	// // all be crammed together.
+	// // We add a break unless the param is the last one or is
+	// // followed by )
+	// if (!(synListCount == synList.length - 1) && !(synList[synListCount +
+	// 1].contains(")"))) {
+	// res += TAB3 + "pp.brk();\n";
+	// }
+	// } else { // int, bool, float....
+	// // In this case it's a primitive type. We should just
+	// // directly print its literal representation.
+	// // The \"\" here is just a hack to force the param to be
+	// // displayed as String without having to call
+	// // `toString`...
+	//
+	// // In these types we will ask the user to
+	// // manually implement things. The code is in the method
+	// // "genClassMethod"
+	//
+	// // First we'll have to ensure there's actually some
+	// // param
+	// // out there. Otherwise this will be a mismatch. e.g.
+	// // newline
+	// if (!params.isEmpty()) {
+	// String temp = "\"\" + " + paramName;
+	// res += TAB3 + "pp.print(" + temp + ");\n";
+	// } else {
+	// // Should remind the user to manually write
+	// // something
+	// // here.
+	// // Will try to add warning later.
+	// res += TAB3 + "// Please write manual printing method for this piece of
+	// grammar.";
+	// }
+	//
+	// // We add a space unless the literal is the last one or
+	// // is
+	// // followed by )
+	// // However it seems there is another issue where even if
+	// // the previous argument is completely empty, we'd still
+	// // add a brk() here.
+	// if (!(synListCount == synList.length - 1) && !(synList[synListCount +
+	// 1].contains(")"))) {
+	// res += TAB3 + "pp.brk();\n";
+	// }
+	// }
+	// }
+	// // Preventative for arrayOutOfBounds error.
+	// // Actually I don't think this logic is very correct. Why are we
+	// // trying to increase paramCount here? Let me see what happens
+	// // anyways.
+	// if (paramCount < params.size() - 1) {
+	// paramCount++;
+	// } else { // else it means we've finished processing?
+	// break;
+	// }
+	// }
+	//
+	// // It seems that the additional check is because synListCount could
+	// // also be
+	// // incremented inside of the while loop itself. (synListCount++)
+	// // Wait this is still weird let's see if we can do better.
+	// // if (synListCount < synList.length) {
+	// // }
+	// synListCount++;
+	// }
+	//
+	// res += "\n";
+	// res += TAB3 + "pp.end();\n";
+	// res += TAB2 + "};\n";
+	// res += TAB + "}\n";
+	//
+	// /* print debugging info. */
+	// res += "/* \n";
+	// res += "params.size(): " + params.size() + "\n";
+	// res += "Original syn: " + syn + "\n";
+	// res += "Original synList: " + Arrays.toString(synList) + "\n";
+	// res += "synList.length: " + synList.length + "\n";
+	// res += "e.getParameters(): " + e.getParameters() + "\n";
+	// for (VariableElement param : params) {
+	// res += param.toString() + ": " + param.asType() + "\n";
+	// }
+	// res += "typeArgs: " + typeArgs + "\n";
+	// res += "lListTypeArgs: ";
+	// for (String t : lListTypeArgs) {
+	// res += t + ", ";
+	// }
+	// res += "\n";
+	// res += e.getAnnotation(Syntax.class).value() + "\n";
+	// res += "\n */ \n\n";
+	//
+	// return res;
+	// }
 
 	private String genClassMethod(ExecutableElement e, String typeArgs) {
 		String[] lTypeArgs = typeArgs.split(",");
@@ -412,9 +902,10 @@ public class PPProcessor extends AbstractProcessor {
 		List<? extends VariableElement> params = e.getParameters();
 		String res = "";
 
-		// Only those nodes with one parameter can be a primitive type. Check
-		// it.
-		if (params.size() > 1) {
+		// We're trying to generate class methods. Only those nodes with one
+		// parameter can be a primitive type. Check it.
+		// However maybe an empty params list also doesn't work?
+		if (params.isEmpty() || params.size() > 1) {
 			return "";
 		}
 		// It seems that we start from synListCount = 2 bceause the first two
@@ -481,9 +972,9 @@ public class PPProcessor extends AbstractProcessor {
 					res += ") {\n";
 					// Now let me also try to output what method is being
 					// currently invoked to the standard output.
-					
-					res += TAB2 + "System.out.println(\"We're currently trying to invoke overridden method " + e.getSimpleName() + " with parameters " + e.getParameters()
-				+ "\");\n";
+
+					res += TAB2 + "System.out.println(\"We're currently trying to invoke overridden method "
+							+ e.getSimpleName() + " with parameters " + e.getParameters() + "\");\n";
 					res += TAB2 + "return (Layouter<NoExceptions> pp) -> {\n";
 					res += TAB3 + "pp.beginI();\n";
 
@@ -521,6 +1012,7 @@ public class PPProcessor extends AbstractProcessor {
 
 	}
 
+	// We'll use a better version of this stuff.
 	private String getSeparator(String str) {
 		// getSeparator( "exp@','+" ) ---> ","
 		int i = str.indexOf("@");
