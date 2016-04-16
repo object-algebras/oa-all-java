@@ -128,7 +128,7 @@ class NormalAlt extends Alt implements ConventionsPP {
 							+ ConventionsPP.labelFor(labelCounter, n) + "),";
 				}
 				labelCounter += 1;
-			} else if (ConventionsPP.isToken(s)) {
+			} 			else if (ConventionsPP.isToken(s)) {
 				prod += ConventionsPP.labelFor(labelCounter, s) + "=" + s + " ";
 				args += s.toLowerCase() + "($" + ConventionsPP.labelFor(labelCounter, s) + ".text),";
 				labelCounter += 1;
@@ -488,13 +488,55 @@ public class PPProcessor extends AbstractProcessor {
 
 			if (isEOF(s)) {
 				res += "\n";
-			} else if (s.equals("NEWLINE")) {
+			} else if (s.equals("NEWLINE") || s.equals("NEWLINE?")) {
 				res += "\n";
 			} else if (s.equals("INDENT")) {
 				res += TAB3 + "pp.beginI();\n";
 			} else if (s.equals("DEDENT")) {
 				res += TAB3 + "pp.end();\n";
-			} else if (isNonTerminal(s)) { // NonTerminals start with lowercase
+			} else if (s.equals("(")) {
+				// Handle the case of brackets in the grammar. e.g. 
+				/*
+				 * @Syntax("except_from_test = test ( 'as' NAME )?")
+                 * E except_from_test(E test, String name);
+				 */
+				// The only possible ending is )?
+				// Actually we should just do nothing during the printing it seems. If there's nothing to print then it will just print nothing? Or actually no, if there's nothing to print then we shouldn't print the symbol either... In which case the logic would be a bit more complicated.
+				
+				// We'll have to process the substring and see if there's actually anything to print. OK.
+				
+				// However this we can only determine at runtime...
+//				int tempSynListCount = synListCount;
+//				while (!synList[tempSynListCount].equals(")?")) {
+//					tempSynListCount++;
+//				}
+//				// These are the symbols within ( )?
+//				String[] optionalSynList = Arrays.copyOfRange(synList, synListCount+1, tempSynListCount-1);
+//				// However how do we detect whether there's anything in them?... This is quite hard actually.
+//				// Iterate through all those symbols, if they're not String, then see whether they're empty?
+//				int tempParamCount = paramCount;
+//				for (String sym : optionalSynList) {
+//					if (sym.startsWith("'") && sym.endsWith("'")) {
+//						continue;
+//					} else if (isToken(sym)) {
+//						tempParamCount++;
+//						continue;
+//					} else if (isNonTerminal(sym)) {
+//						String tempParamName = "param" + tempParamCount;
+////						res += TAB3 + "if (!(" + tempParamName + " == null || " + tempParamName + "."
+//						// If we see that there is nothing to print, then we should just jump over this list. However the problem is that how should we perform the detection and jump at runtime?
+//						res += TAB3 + "if ((" + tempParamName + " == null)) {\n";
+//						res += TAB4 + "";
+//						if (!(tempParamName == null || (Utils.arrayContains(lListTypeArgs, params.get(tempParamCount))) && tempParam))
+//					}
+//					
+//				}
+			} else if (s.equals(")?")) {
+				// Do nothing
+			} else if (s.equals("?")) {
+				// This indicates the previous thing is optional... I think we shouldn't deal with it at all then.
+			}
+			else if (isNonTerminal(s)) { // NonTerminals start with lowercase
 				// I think it should just correspond with the current parameter.
 				// Could it be the parameter with the same id as the current
 				// syn? No I don't think that's necessarily related.
@@ -503,8 +545,9 @@ public class PPProcessor extends AbstractProcessor {
 				// In this case it's just one single printer argument,
 				// not a
 				// list.
-
-				res += TAB3 + paramName + ".printLocal(pp);\n";
+				res += TAB3 + "if (!(" + paramName + " == null)) {\n";
+				res += TAB4 + paramName + ".printLocal(pp);\n";
+				res += TAB3 + "}\n";
 				paramCount++;
 			} else if (isRegular(s)) { // "regular" means nonTerminal+/?
 				// String n = getRegularSymbol(s);
@@ -519,6 +562,14 @@ public class PPProcessor extends AbstractProcessor {
 				// correct.
 				// res += TAB3 + "// The type is " +
 				// params.get(paramCount).asType().toString() + "\n";
+				res += TAB3 + "System.out.println(\"In method + " + e.getSimpleName() + "\");\n";
+				res += TAB3 + "if (!(" + paramName + " == null)) {\n";
+				res += TAB4 + "System.out.println(\"The current param " + paramName + " has length: \" + " + paramName + ".size());\n";
+				res += TAB3 + "}\n";
+				res += TAB3 + "else {\n";
+				res += TAB4 + "System.out.println(\"The current param " + paramName + " is null! \");\n";
+				res += TAB3 + "}\n";
+				
 				res += TAB3 + "if (!(" + paramName + " == null) && !" + paramName + ".isEmpty()) {\n";
 				res += TAB4 + "for (int count = 0; count < " + paramName + ".size() - 1; count++) {\n";
 				res += TAB5 + paramName + ".get(count).printLocal(pp);\n";
@@ -529,7 +580,30 @@ public class PPProcessor extends AbstractProcessor {
 				res += TAB4 + paramName + ".get(" + paramName + ".size() - 1).printLocal(pp);\n";
 				res += TAB3 + "}\n";
 				paramCount++;
-			} else if (isToken(s)) { // Token is something starting with upper
+			} else if (ConventionsPP.isTokenRegular(s)) {
+				res += TAB3 + "System.out.println(\"In method + " + e.getSimpleName() + "\");\n";
+				res += TAB3 + "if (!(" + paramName + " == null)) {\n";
+				res += TAB4 + "System.out.println(\"The current param " + paramName + " has length: \" + " + paramName + ".size());\n";
+				res += TAB3 + "}\n";
+				res += TAB3 + "else {\n";
+				res += TAB4 + "System.out.println(\"The current param " + paramName + " is null! \");\n";
+				res += TAB3 + "}\n";
+				
+				res += TAB3 + "if (!(" + paramName + " == null) && !" + paramName + ".isEmpty()) {\n";
+				res += TAB4 + "for (int count = 0; count < " + paramName + ".size() - 1; count++) {\n";
+				String temp = "\"\" + " + paramName + ".get(count);\n";
+				res += TAB5 + "pp.print(" + temp + ");\n";
+				res += TAB5 + "pp.brk();\n";
+				res += TAB4 + "}\n";
+				// Print the last element of the list without printing
+				// extra breaks.
+				res += TAB4 + paramName + ".get(" + paramName + ".size() - 1).printLocal(pp);\n";
+				String last = "\"\" + " + paramName + ".get(" + paramName + ".size() - 1);\n";
+				res += TAB4 + "pp.print(" + last + ");\n";
+				res += TAB3 + "}\n";
+				paramCount++;
+			}
+			else if (isToken(s)) { // Token is something starting with upper
 										// case. Supposedly they should all be
 										// primitive types!
 				// In this case it's a primitive type. We should just
@@ -616,11 +690,24 @@ public class PPProcessor extends AbstractProcessor {
 							// to check this first otherwise there will be a
 							// null
 							// pointer exception.
+				res += TAB3 + "System.out.println(\"In method + " + e.getSimpleName() + "\");\n";
+				res += TAB3 + "if (!(" + paramName + " == null)) {\n";
+				res += TAB4 + "System.out.println(\"The current param " + paramName + " has length: \" + " + paramName + ".size());\n";
+				res += TAB3 + "}\n";
+				res += TAB3 + "else {\n";
+				res += TAB4 + "System.out.println(\"The current param " + paramName + " is null! \");\n";
+				res += TAB3 + "}\n";
+				
 					res += TAB3 + "if (!(" + paramName + " == null) && !" + paramName + ".isEmpty()) {\n";
 					res += TAB4 + "for (int count = 0; count < " + paramName + ".size() - 1; count++) {\n";
 					res += TAB5 + paramName + ".get(count).printLocal(pp);\n";
-					// If no separator, should just give a new line?
-					if (sep.isEmpty()) {
+//					if (isLiteral(sep) && sep.length() > 2 && sep.indexOf("'") != sep.lastIndexOf("'") && sep.indexOf("'") != sep.length() - 1) {
+					if (isLiteral(sep)) {
+						String tempSep = sep.substring(sep.indexOf("'") + 1, sep.lastIndexOf("'"));
+						res += TAB5 + "pp.print(\"" + tempSep + "\");\n";
+						res += TAB5 + "pp.brk();\n";
+					} else if (sep.isEmpty()) {
+						// If no separator, should just give a new line?
 						res += TAB5 + "pp.nl();\n";
 					} else {
 						res += TAB5 + "pp.print(\"" + sep + "\");\n";
@@ -637,12 +724,20 @@ public class PPProcessor extends AbstractProcessor {
 					// Do we need to do anything?
 					res += TAB3 + "// We found zeroOrMoreSepList, so?\n";
 				}
-			} else { // Then it should really just be a keyword string, print it
+			}
+			
+			else if (isLiteral(s)) { // Then it should really just be a keyword string, print it
 						// as it is.
+				String tempS = s.substring(s.indexOf("'") + 1, s.lastIndexOf("'"));
+				res += TAB3 + "pp.print(" + "\"" + tempS + "\");\n";
+			} else {
+				// Is this a bug? Is this supposed to happen at all?
+				res += TAB3 + "// We've likely encountered a bug here. What's the symbol? " + s + "\n";
 				if (s.length() > 1) {
 					s = s.substring(1, s.length() - 1);
 				}
 				res += TAB3 + "pp.print(" + "\"" + s + "\");\n";
+				
 			}
 			// If it's not the last element we should probably add a break
 			// Actually now I'm not sure whether ) is a good indicator. Let's
@@ -656,6 +751,26 @@ public class PPProcessor extends AbstractProcessor {
 		res += TAB3 + "pp.end();\n";
 		res += TAB2 + "};\n";
 		res += TAB + "}\n";
+		
+	 /* print debugging info. */
+	 res += "/* \n";
+	 res += "params.size(): " + params.size() + "\n";
+	 res += "Original syn: " + syn + "\n";
+	 res += "Original synList: " + Arrays.toString(synList) + "\n";
+	 res += "synList.length: " + synList.length + "\n";
+	 res += "e.getParameters(): " + e.getParameters() + "\n";
+	 for (VariableElement param : params) {
+	 res += param.toString() + ": " + param.asType() + "\n";
+	 }
+	 res += "typeArgs: " + typeArgs + "\n";
+	 res += "lListTypeArgs: ";
+	 for (String t : lListTypeArgs) {
+	 res += t + ", ";
+	 }
+	 res += "\n";
+	 res += e.getAnnotation(Syntax.class).value() + "\n";
+	 res += "\n */ \n\n";
+		
 		return res;
 	}
 	// Starting from this point is the old code.
@@ -898,7 +1013,8 @@ public class PPProcessor extends AbstractProcessor {
 		}
 
 		String syn = e.getAnnotation(Syntax.class).value();
-		String[] synList = syn.split(" ");
+		// Sometimes the thing Syntax mysteriously has more than one spaces in between... \\s+ is more appropriate
+		String[] synList = syn.split("\\s+");
 		List<? extends VariableElement> params = e.getParameters();
 		String res = "";
 

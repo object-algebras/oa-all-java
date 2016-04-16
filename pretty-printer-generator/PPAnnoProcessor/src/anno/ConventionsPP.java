@@ -19,13 +19,17 @@ public interface ConventionsPP {
     static boolean isToken(String s) {
         return s.matches("^[A-Z][a-zA-Z_]*$");
     }
+    
+    static boolean isTokenRegular(String s) {
+        return s.matches("^[A-Z][a-zA-Z_]*[*+?]$");
+    }
 
     static boolean isSepToken(String s) {
         return s.matches("^[a-zA-Z_]*$");
     }
 
     static boolean isLiteral(String op) {
-        return op.matches("^'.*'$");
+        return op.matches("^'.*'[*+?]?$");
     }
 
     static boolean isNonTerminal(String s) {
