@@ -487,9 +487,9 @@ public class PPProcessor extends AbstractProcessor {
 			String paramName = "p" + paramCount;
 
 			if (isEOF(s)) {
-				res += "\n";
-			} else if (s.equals("NEWLINE") || s.equals("NEWLINE?")) {
-				res += "\n";
+				res += TAB3 + "pp.nl();\n";
+			} else if (s.equals("NEWLINE") || s.equals("NEWLINE?") || s.equals("NEWLINE*") || s.equals("NEWLINE+")) {
+				res += TAB3 + "pp.nl();\n";
 			} else if (s.equals("INDENT")) {
 				res += TAB3 + "pp.beginI();\n";
 			} else if (s.equals("DEDENT")) {
@@ -531,8 +531,9 @@ public class PPProcessor extends AbstractProcessor {
 //					}
 //					
 //				}
-			} else if (s.equals(")?")) {
+			} else if (s.equals(")?") || s.equals(")")) {
 				// Do nothing
+				// I'm not sure if ")" is something valid. Let's do it now anyways.
 			} else if (s.equals("?")) {
 				// This indicates the previous thing is optional... I think we shouldn't deal with it at all then.
 			}
@@ -1129,17 +1130,17 @@ public class PPProcessor extends AbstractProcessor {
 	}
 
 	// We'll use a better version of this stuff.
-	private String getSeparator(String str) {
-		// getSeparator( "exp@','+" ) ---> ","
-		int i = str.indexOf("@");
-		// Note that if the thing is of form '', then it uses space as separator
-		// by default and we shouldn't add anything extra.
-		if (str.substring(i + 1, i + 3).equals("''")) {
-			return "";
-		} else {
-			return str.substring(i + 2, i + 3);
-		}
-	}
+//	private String getSeparator(String str) {
+//		// getSeparator( "exp@','+" ) ---> ","
+//		int i = str.indexOf("@");
+//		// Note that if the thing is of form '', then it uses space as separator
+//		// by default and we shouldn't add anything extra.
+//		if (str.substring(i + 1, i + 3).equals("''")) {
+//			return "";
+//		} else {
+//			return str.substring(i + 2, i + 3);
+//		}
+//	}
 
 	@Override
 	public SourceVersion getSupportedSourceVersion() {
