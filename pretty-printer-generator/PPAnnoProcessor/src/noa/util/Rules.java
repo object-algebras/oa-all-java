@@ -145,6 +145,7 @@ public class Rules implements Conventions {
         sb.append("private java.util.LinkedList<Token> tokens = new java.util.LinkedList<>();\n");
         sb.append("private java.util.Stack<Integer> indents = new java.util.Stack<>();\n");
         sb.append("private int opened = 0;\n");
+        sb.append("private int opened2 = 0;\n");
         sb.append("private Token lastToken = null;\n");
         sb.append("\n@Override\n");
         sb.append("public void emit(Token t) {\n");
