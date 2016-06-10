@@ -2,6 +2,8 @@ package pptest;
 
 import java.util.List;
 
+import noa.annos.Level;
+import noa.annos.Syntax;
 import anno.*;
 
 @PP(Tokens.class)
