@@ -181,7 +181,10 @@ public class PGen {
                         + "}\n"
                         + ";\n"
                         ;
-            }
+            } else if (name.equals("openbracket")) { return name.toUpperCase() + ": '[' {opened++;};\n"; }
+            else if (name.equals("closebracket")) { return name.toUpperCase() + ": ']' {opened--;};\n"; }
+            else if (name.equals("openparen")) { return name.toUpperCase() + ": '(' {opened2++;};\n"; }
+            else if (name.equals("closeparen")) { return name.toUpperCase() + ": ')' {opened2--;};\n"; }
             else {
                 return (fragment?"fragment ":"") + name.toUpperCase() + ": " + def + (skip ? " -> skip" : "") + ";";
             }
